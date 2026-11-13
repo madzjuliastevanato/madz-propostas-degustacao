@@ -1,0 +1,324 @@
+html,
+body {
+  height: 100%;
+}
+
+body.tela-bemvindos {
+  margin: 0;
+  background: radial-gradient(ellipse at 50% 40%, #1c1c1f 0%, #0a0a0b 70%);
+  color: var(--cor-texto);
+  font-family: var(--fonte-texto);
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Textura discreta, usada nas telas de resumo/pacote (sem a foto do casal) para
+   facilitar a leitura das informações, mantendo um fundo elegante. */
+.fundo-textura {
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 1px,
+    transparent 1px,
+    transparent 48px
+  );
+}
+
+.fundo-foto {
+  position: absolute;
+  inset: 0;
+  background-image: url("../assets/foto_fundo_bemvindos_v2.webp");
+  background-repeat: no-repeat;
+  /* Foto já ampliada (mais larga) pela Julia — cobre a largura toda e enquadra
+     rosto do casal + canequinha MADZ sem precisar afastar o zoom. */
+  background-size: cover;
+  background-position: center 46%;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.fundo-gradiente {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center 60%, rgba(0, 0, 0, 0.35) 0%, rgba(0, 0, 0, 0.78) 65%, rgba(0, 0, 0, 0.94) 100%);
+}
+
+/* Na apresentação (resumo/pacote), some a foto — só a tela de Bem-Vindos usa a foto. */
+body.modo-apresentacao .fundo-foto,
+body.modo-apresentacao .fundo-gradiente {
+  display: none;
+}
+
+.conteudo-bemvindos {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 2rem;
+}
+
+.logo-bemvindos {
+  width: clamp(90px, 9vw, 160px);
+  margin-bottom: 1.6rem;
+  opacity: 0.95;
+}
+
+.nome-casal {
+  font-family: var(--fonte-cursiva);
+  font-weight: 400;
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  color: var(--cor-dourado-forte);
+  margin: 0 0 0.6rem;
+  line-height: 1.1;
+}
+
+.tagline-bemvindos {
+  font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--cor-texto-suave);
+}
+
+.vista-apresentacao {
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3vh 5vw;
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+
+.apresentacao-cabecalho {
+  text-align: center;
+  margin-bottom: 2.5vh;
+  flex-shrink: 0;
+}
+
+.apresentacao-casal {
+  display: block;
+  font-family: var(--fonte-cursiva);
+  font-size: clamp(1.6rem, 3vw, 2.6rem);
+  color: var(--cor-texto-suave);
+  margin-bottom: 0.3rem;
+}
+
+.apresentacao-pacote-nome {
+  font-size: clamp(2.2rem, 5vw, 4rem);
+  color: var(--cor-dourado-forte);
+  margin: 0;
+}
+
+.apresentacao-pacote-descricao {
+  font-size: clamp(0.95rem, 1.4vw, 1.3rem);
+  color: var(--cor-texto-suave);
+  margin: 0.4rem 0 0;
+}
+
+.apresentacao-secao-titulo {
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--cor-dourado);
+  text-align: center;
+  margin: 0 0 0.8vh;
+  flex-shrink: 0;
+}
+
+.apresentacao-aguardando {
+  color: var(--cor-texto-suave);
+  font-style: italic;
+  font-size: clamp(1rem, 1.6vw, 1.4rem);
+  text-align: center;
+}
+
+.apresentacao-cortesias {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.2vh;
+}
+
+.cortesia-chip-tv {
+  border: 1px solid var(--cor-dourado);
+  color: var(--cor-dourado-forte);
+  border-radius: 999px;
+  padding: 0.3em 1em;
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+}
+
+.apresentacao-vazio {
+  color: var(--cor-texto-suave);
+  font-style: italic;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+}
+
+.resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1.2rem 2rem;
+  width: 100%;
+  max-width: 1200px;
+  margin-bottom: 3vh;
+}
+
+.resumo-grid div {
+  text-align: center;
+}
+
+.resumo-grid span {
+  display: block;
+  font-size: clamp(0.72rem, 1vw, 0.9rem);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cor-dourado);
+  margin-bottom: 0.3rem;
+}
+
+.resumo-grid strong {
+  font-size: clamp(1.1rem, 1.8vw, 1.6rem);
+  font-weight: 600;
+}
+
+.resumo-colunas {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3rem;
+  width: 100%;
+  max-width: 1200px;
+}
+
+.bloco-tv {
+  min-width: 260px;
+}
+
+.bloco-tv h3 {
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cor-dourado);
+  margin: 0 0 0.6rem;
+  text-align: center;
+}
+
+.bloco-tv ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  text-align: center;
+  font-size: clamp(0.95rem, 1.4vw, 1.3rem);
+  line-height: 1.7;
+}
+
+.colunas-pagamento-tv {
+  display: flex;
+  width: 100%;
+  max-width: 1400px;
+}
+
+.coluna-tipo-tv {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0 clamp(1rem, 2.5vw, 2.8rem);
+}
+
+.coluna-tipo-tv:first-child {
+  padding-left: 0;
+}
+
+.coluna-tipo-tv:last-child {
+  padding-right: 0;
+}
+
+.divisor-coluna-tv {
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, rgba(201, 163, 90, 0.35) 10%, rgba(201, 163, 90, 0.35) 90%, transparent);
+}
+
+.coluna-tipo-tv-cabecalho {
+  text-align: center;
+  margin-bottom: clamp(0.6rem, 1.4vh, 1.2rem);
+}
+
+.tipo-nome-tv {
+  color: var(--cor-dourado);
+  font-size: clamp(0.75rem, 1.1vw, 1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.valor-convidado-tv {
+  display: block;
+  margin-top: 0.3rem;
+  color: var(--cor-texto-suave);
+  font-size: clamp(0.78rem, 1.1vw, 1rem);
+}
+
+.linha-opcao-tv {
+  padding: clamp(0.6rem, 1.4vh, 1.1rem) 0;
+  border-bottom: 1px solid rgba(201, 163, 90, 0.22);
+}
+
+.linha-opcao-tv:last-child {
+  border-bottom: none;
+}
+
+.linha-opcao-tv-topo {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.8rem;
+}
+
+.nome-opcao-tv {
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  color: #cbb98a;
+  white-space: nowrap;
+}
+
+.linha-opcao-tv .total-tv {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(1.3rem, 2.4vw, 2.1rem);
+  color: var(--cor-dourado-forte);
+  text-align: right;
+}
+
+.linha-opcao-tv .detalhe-tv {
+  display: block;
+  font-size: clamp(0.72rem, 1vw, 0.95rem);
+  color: var(--cor-texto-suave);
+  margin-top: 0.2rem;
+}
+
+.botao-tela-cheia {
+  position: absolute;
+  bottom: 1.2rem;
+  right: 1.2rem;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--cor-texto-suave);
+  border-radius: 8px;
+  padding: 0.5em 1em;
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.botao-tela-cheia:hover {
+  border-color: var(--cor-dourado);
+  color: var(--cor-dourado);
+}
