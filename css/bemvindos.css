@@ -311,6 +311,68 @@ body.modo-apresentacao .fundo-gradiente {
   margin-top: 0.2rem;
 }
 
+/* ---------- Resumo da compra (TV) ---------- */
+
+.resumo-compra-linha-pacote-tv {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1.5rem;
+  width: 100%;
+  max-width: 1100px;
+  padding: clamp(0.8rem, 1.6vh, 1.4rem) 0;
+  border-bottom: 1px solid rgba(201, 163, 90, 0.35);
+  margin-bottom: clamp(0.8rem, 1.6vh, 1.4rem);
+}
+
+.resumo-compra-linha-pacote-tv span {
+  font-size: clamp(0.95rem, 1.4vw, 1.3rem);
+  color: #cbb98a;
+}
+
+.resumo-compra-linha-pacote-tv strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  color: var(--cor-dourado-forte);
+  white-space: nowrap;
+}
+
+.resumo-compra-linha-tv {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 1100px;
+  padding: clamp(0.4rem, 1vh, 0.7rem) 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  color: #d8d3cb;
+}
+
+.resumo-compra-total-tv {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  width: 100%;
+  max-width: 1100px;
+  margin-top: clamp(1rem, 2vh, 1.6rem);
+  padding-top: clamp(1rem, 2vh, 1.6rem);
+  border-top: 1px solid var(--cor-dourado);
+}
+
+.resumo-compra-total-tv span {
+  font-family: var(--fonte-titulo);
+  font-size: clamp(1.1rem, 1.6vw, 1.5rem);
+  color: var(--cor-dourado);
+}
+
+.resumo-compra-total-tv strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(2rem, 3.6vw, 3.2rem);
+  color: var(--cor-dourado-forte);
+}
+
 .botao-tela-cheia {
   position: absolute;
   bottom: 1.2rem;

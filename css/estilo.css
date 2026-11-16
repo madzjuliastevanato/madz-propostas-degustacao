@@ -213,6 +213,38 @@ button.botao-discreto:hover {
   width: 100%;
 }
 
+/* ---------- Navegação em abas ---------- */
+
+.abas-navegacao {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1.2rem var(--espaco) 0;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.aba-botao {
+  background: transparent;
+  border: 1px solid transparent;
+  border-bottom: none;
+  color: var(--cor-texto-suave);
+  padding: 0.6em 1.2em;
+  border-radius: 8px 8px 0 0;
+}
+
+.aba-botao.ativa {
+  background: var(--cor-fundo-alt);
+  border-color: var(--cor-borda);
+  color: var(--cor-dourado-forte);
+  font-weight: 600;
+}
+
+.aba-conteudo {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
 /* ---------- Layout principal ---------- */
 
 main {
@@ -607,6 +639,283 @@ main {
 
 .aviso-salvamento.visivel {
   opacity: 1;
+}
+
+/* ---------- Aba Adicionais (vitrine) ---------- */
+
+.adicionais-cabecalho {
+  text-align: center;
+}
+
+.adicionais-cabecalho p {
+  color: var(--cor-texto-suave);
+}
+
+.categoria-adicional {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-fundo-alt);
+  padding: var(--espaco);
+}
+
+.categoria-adicional-topo {
+  display: flex;
+  gap: 1.5rem;
+  align-items: flex-start;
+  margin-bottom: 1.2rem;
+  flex-wrap: wrap;
+}
+
+.categoria-adicional-info {
+  flex: 1;
+  min-width: 240px;
+}
+
+.categoria-adicional-nome {
+  font-size: 1.5rem;
+  color: var(--cor-dourado-forte);
+  margin: 0 0 0.4rem;
+}
+
+.categoria-adicional-explicacao {
+  color: var(--cor-texto-suave);
+  font-size: 0.88rem;
+  line-height: 1.6;
+  margin: 0;
+  max-width: 560px;
+}
+
+.categoria-adicional-fotos {
+  display: flex;
+  gap: 0.6rem;
+  flex-shrink: 0;
+}
+
+.categoria-adicional-foto {
+  width: 110px;
+  height: 82px;
+  border-radius: 8px;
+  object-fit: cover;
+}
+
+.categoria-adicional-foto-placeholder {
+  width: 110px;
+  height: 82px;
+  border: 1px dashed var(--cor-borda);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--cor-texto-suave);
+  font-size: 0.68rem;
+  text-align: center;
+  padding: 0.4rem;
+}
+
+.item-adicional {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.8rem 0;
+  border-bottom: 1px solid var(--cor-borda);
+  flex-wrap: wrap;
+}
+
+.item-adicional:last-child {
+  border-bottom: none;
+}
+
+.item-adicional label {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  font-size: 0.95rem;
+  color: var(--cor-texto);
+  text-transform: none;
+  letter-spacing: normal;
+  margin: 0;
+}
+
+.item-adicional input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--cor-dourado);
+}
+
+.item-adicional-observacao {
+  font-size: 0.76rem;
+  color: var(--cor-texto-suave);
+}
+
+.item-adicional-valor {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.2rem;
+  color: var(--cor-dourado-forte);
+}
+
+.item-adicional-valor input[type="number"] {
+  width: 7rem;
+  font-family: var(--fonte-texto);
+  font-size: 0.9rem;
+  text-align: right;
+}
+
+.adicionais-total-barra {
+  position: sticky;
+  bottom: 1rem;
+  margin-top: 0.5rem;
+  padding: 1rem 1.4rem;
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-dourado);
+  border-radius: var(--raio);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adicionais-total-barra span:first-child {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cor-texto-suave);
+}
+
+.adicionais-total-barra strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.5rem;
+  color: var(--cor-dourado-forte);
+}
+
+/* ---------- Aba Resumo ---------- */
+
+.resumo-cabecalho {
+  text-align: center;
+}
+
+.resumo-cabecalho p {
+  color: var(--cor-texto-suave);
+}
+
+.resumo-selecoes {
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.resumo-selecao-grupo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.resumo-selecao-grupo > span {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cor-texto-suave);
+}
+
+.resumo-pilulas {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.resumo-pilula {
+  border: 1px solid var(--cor-borda);
+  background: var(--cor-fundo-card);
+  color: var(--cor-texto-suave);
+  border-radius: 999px;
+  padding: 0.5em 1.2em;
+  font-size: 0.85rem;
+}
+
+.resumo-pilula.selecionada {
+  background: var(--cor-dourado);
+  border-color: var(--cor-dourado);
+  color: #1a1408;
+  font-weight: 600;
+}
+
+.resumo-detalhe {
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-fundo-alt);
+  padding: var(--espaco);
+}
+
+.resumo-linha-pacote,
+.resumo-linha-adicional {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+
+.resumo-linha-pacote span:first-child,
+.resumo-linha-adicional span:first-child {
+  color: var(--cor-texto-suave);
+  font-size: 0.92rem;
+}
+
+.resumo-linha-pacote strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.3rem;
+  color: var(--cor-dourado-forte);
+}
+
+.resumo-linha-adicional span:last-child {
+  font-size: 1rem;
+  color: var(--cor-texto);
+}
+
+.resumo-subtitulo {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cor-dourado);
+  margin: 1.2rem 0 0.4rem;
+}
+
+.resumo-total-geral {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: 1.2rem;
+  padding-top: 1.2rem;
+  border-top: 1px solid var(--cor-dourado);
+}
+
+.resumo-total-geral span {
+  font-family: var(--fonte-titulo);
+  font-size: 1.1rem;
+  color: var(--cor-dourado);
+}
+
+.resumo-total-geral strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 2rem;
+  color: var(--cor-dourado-forte);
+}
+
+.resumo-vazio {
+  color: var(--cor-texto-suave);
+  font-style: italic;
+  text-align: center;
+  padding: 2rem 0;
 }
 
 /* ---------- Responsivo / tablet ---------- */

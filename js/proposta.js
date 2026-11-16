@@ -115,5 +115,51 @@
     };
   }
 
-  return { TIPOS_BEBIDA, tiposAtivos, formatarDataBr, calcularOpcaoParaTipo, infoDrink, dadosResumo, dadosPacote };
+  // Catálogo de adicionais "achatado" (sem agrupar por categoria) — usado nas
+  // sugestões do campo livre de cortesias.
+  function itensAdicionaisPlano() {
+    return CONFIG.catalogoAdicionais.flatMap((categoria) =>
+      categoria.itens.map((item) => ({ ...item, categoria: categoria.categoria }))
+    );
+  }
+
+  // Resumo da compra: pacote + bebida + forma de pagamento escolhidos na aba
+  // "Resumo", somados aos adicionais marcados na vitrine. Retorna null enquanto
+  // a escolha não estiver completa.
+  function dadosResumoCompra(estado) {
+    const r = estado.resumoCompra;
+    if (!r || !r.pacoteEscolhido || !r.tipoBebidaEscolhido || !r.opcaoPagamentoEscolhida) return null;
+    const configPacote = CONFIG.pacotes[r.pacoteEscolhido];
+    if (!configPacote) return null;
+    const opcao = configPacote.opcoesPagamento.find((o) => o.id === r.opcaoPagamentoEscolhida);
+    if (!opcao) return null;
+    const tipoInfo = TIPOS_BEBIDA.find((t) => t.id === r.tipoBebidaEscolhido);
+    const resultado = calcularOpcaoParaTipo(estado, r.pacoteEscolhido, r.tipoBebidaEscolhido, opcao);
+    const totalAdicionais = estado.adicionaisSelecionados.reduce((soma, a) => soma + (a.valor || 0), 0);
+
+    return {
+      nomeCasal: estado.cabecalho.nomeCasal,
+      pacoteNome: configPacote.nome,
+      tipoNome: tipoInfo ? tipoInfo.nome : r.tipoBebidaEscolhido,
+      opcaoNome: opcao.nome,
+      totalPacote: resultado.totalComDesconto,
+      detalhePacote: resultado.detalhe,
+      avisoPacote: resultado.aviso,
+      adicionais: estado.adicionaisSelecionados,
+      totalAdicionais,
+      totalGeral: resultado.aviso ? null : resultado.totalComDesconto + totalAdicionais,
+    };
+  }
+
+  return {
+    TIPOS_BEBIDA,
+    tiposAtivos,
+    formatarDataBr,
+    calcularOpcaoParaTipo,
+    infoDrink,
+    dadosResumo,
+    dadosPacote,
+    itensAdicionaisPlano,
+    dadosResumoCompra,
+  };
 });

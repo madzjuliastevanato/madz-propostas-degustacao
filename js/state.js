@@ -85,6 +85,15 @@
       // (só o limite de contagem exibido muda por pacote).
       drinksSelecionados: [],
       caipirinhas: ["", ""],
+      // Adicionais marcados na vitrine, independente do pacote (mesma lógica dos drinks).
+      // Cada item: { categoria, nome, valor }.
+      adicionaisSelecionados: [],
+      // Escolha final para o resumo da compra — preenchida na aba "Resumo".
+      resumoCompra: {
+        pacoteEscolhido: null,
+        tipoBebidaEscolhido: null,
+        opcaoPagamentoEscolhida: null,
+      },
       pacotes,
     };
   }

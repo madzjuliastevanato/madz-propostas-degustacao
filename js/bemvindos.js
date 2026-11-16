@@ -104,11 +104,65 @@
     `;
   }
 
+  function renderizarResumoCompra(estado) {
+    const dados = proposta.dadosResumoCompra(estado);
+
+    if (!dados) {
+      vistaApresentacao.innerHTML = `
+        <div class="apresentacao-cabecalho">
+          <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
+          <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+        </div>
+        <p class="apresentacao-aguardando">Aguardando a escolha do pacote e da forma de pagamento</p>
+      `;
+      return;
+    }
+
+    if (dados.avisoPacote) {
+      vistaApresentacao.innerHTML = `
+        <div class="apresentacao-cabecalho">
+          <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
+          <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+        </div>
+        <p class="apresentacao-aguardando">${dados.avisoPacote}</p>
+      `;
+      return;
+    }
+
+    const adicionaisHtml = dados.adicionais.length
+      ? dados.adicionais
+          .map(
+            (a) =>
+              `<div class="resumo-compra-linha-tv"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valor)}</span></div>`
+          )
+          .join("")
+      : `<p class="apresentacao-vazio">Nenhum adicional selecionado.</p>`;
+
+    vistaApresentacao.innerHTML = `
+      <div class="apresentacao-cabecalho">
+        <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
+        <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+      </div>
+      <div class="resumo-compra-linha-pacote-tv">
+        <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
+        <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+      </div>
+      <h3 class="apresentacao-secao-titulo">Adicionais selecionados</h3>
+      ${adicionaisHtml}
+      <div class="resumo-compra-total-tv">
+        <span>Total geral</span>
+        <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
+      </div>
+    `;
+  }
+
   function aplicar(dados) {
     if (!dados) return;
 
     if (dados.tipo === "apresentacao" && dados.modo === "espelho" && dados.estado) {
-      if (dados.pacoteAtivo === "resumo" || !CONFIG.pacotes[dados.pacoteAtivo]) {
+      if (dados.pacoteAtivo === "resumo-compra") {
+        renderizarResumoCompra(dados.estado);
+      } else if (dados.pacoteAtivo === "resumo" || !CONFIG.pacotes[dados.pacoteAtivo]) {
         renderizarResumo(dados.estado);
       } else {
         renderizarPacote(dados.estado, dados.pacoteAtivo);

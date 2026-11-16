@@ -110,23 +110,103 @@
       },
     },
 
-    // Catálogo de adicionais com valor de referência (sugestões de cortesia, campo continua livre).
+    // Catálogo de adicionais, organizado por categoria — usado na vitrine da aba
+    // "Adicionais" (cada categoria vira um bloco com explicação, fotos e itens com
+    // valor) e também como sugestão para o campo livre de cortesias.
+    // "fotos" é uma lista de caminhos (ex.: "assets/adicionais/welcome-drink-1.jpg");
+    // enquanto vazia, a vitrine mostra um espaço reservado no lugar da foto.
     catalogoAdicionais: [
-      { nome: "Whiskeria (2 rótulos à escolha)", valorReferencia: 4000, observacao: "carrinho opcional +1.000" },
-      { nome: "Torre de taças", valorReferencia: 800 },
-      { nome: "Welcome drink: suqueiras com 3 drinks", valorReferencia: 1500 },
-      { nome: "Welcome drink: gelo floral com espumante saborizado", valorReferencia: 1900 },
-      { nome: "Welcome drink: gelo floral com drink spritz", valorReferencia: 2500 },
-      { nome: "Shots Mini Beer (50 shots)", valorReferencia: 500 },
-      { nome: "Shots Carajillo (80 shots)", valorReferencia: 800 },
-      { nome: "Régua de tequila (1 garrafa)", valorReferencia: 350 },
-      { nome: "Coffee bar (por convidado, junto com o bar)", valorReferencia: null, observacao: "R$ 40 / 42 / 45 por convidado" },
-      { nome: "Views: Espelho Mágico", valorReferencia: 2200 },
-      { nome: "Views: Totem Retrô", valorReferencia: 1890 },
-      { nome: "Views: Polaroid + Guest Book", valorReferencia: 2190 },
-      { nome: "Mão de obra extra (Black Tie)", valorReferencia: 350 },
-      { nome: "Upgrade do Gin Seagers para Gordon's", valorReferencia: 1200 },
-      { nome: "Estrutura de bar (reto, \"U\", ilha) — Boiserie verde/branco/azul, Ripado, Treliça", valorReferencia: null, observacao: "sem valor fixo" },
+      {
+        categoria: "Welcome Drink",
+        explicacao: "Um drink de boas-vindas servido assim que os convidados chegam — a primeira experiência de coquetelaria da festa.",
+        fotos: [
+          "assets/adicionais/welcome-drink-gelo-floral-1.jpg",
+          "assets/adicionais/welcome-drink-gelo-floral-2.jpg",
+          "assets/adicionais/welcome-drink-gelo-floral-3.jpg",
+          "assets/adicionais/welcome-drink-gelo-floral-4.jpg",
+        ],
+        itens: [
+          { nome: "Suqueiras com 3 drinks", valorReferencia: 1500 },
+          { nome: "Gelo floral com espumante saborizado", valorReferencia: 1900 },
+          { nome: "Gelo floral com drink spritz", valorReferencia: 2500 },
+        ],
+      },
+      {
+        categoria: "Whiskeria",
+        explicacao: "Um carrinho com rótulos de whisky à escolha do casal, para os convidados degustarem ao longo da festa.",
+        fotos: [],
+        itens: [
+          { nome: "Whiskeria (2 rótulos à escolha)", valorReferencia: 4000, observacao: "carrinho opcional +1.000" },
+        ],
+      },
+      {
+        categoria: "Torre de Taças",
+        explicacao: "Uma torre de taças de espumante montada ao vivo — um momento visual para o brinde.",
+        fotos: [
+          "assets/adicionais/torre-de-tacas-1.jpg",
+          "assets/adicionais/torre-de-tacas-2.jpg",
+          "assets/adicionais/torre-de-tacas-3.jpg",
+          "assets/adicionais/torre-de-tacas-4.jpg",
+        ],
+        itens: [{ nome: "Torre de taças", valorReferencia: 800 }],
+      },
+      {
+        categoria: "Shots",
+        explicacao: "Shots servidos em bandeja, circulando entre os convidados — uma forma descontraída de energizar a festa.",
+        fotos: ["assets/adicionais/shots-mini-beer-1.jpg", "assets/adicionais/shots-carajillo-1.jpg"],
+        itens: [
+          { nome: "Shots Mini Beer (50 shots)", valorReferencia: 500 },
+          { nome: "Shots Carajillo (80 shots)", valorReferencia: 800 },
+        ],
+      },
+      {
+        categoria: "Régua de Tequila",
+        explicacao: "Uma régua de doses de tequila, servida em grupo, para brindar com os convidados mais próximos.",
+        fotos: [],
+        itens: [{ nome: "Régua de tequila (1 garrafa)", valorReferencia: 350 }],
+      },
+      {
+        categoria: "Coffee Bar",
+        explicacao: "Um espaço de café e drinks quentes, montado junto ao bar, para fechar a noite.",
+        fotos: [],
+        itens: [
+          { nome: "Coffee bar (por convidado, junto com o bar)", valorReferencia: null, observacao: "R$ 40 / 42 / 45 por convidado" },
+        ],
+      },
+      {
+        categoria: "Views",
+        explicacao: "Instalações pensadas para registrar e entreter — um ponto de interação que os convidados levam para casa.",
+        fotos: [],
+        itens: [
+          { nome: "Espelho Mágico", valorReferencia: 2200 },
+          { nome: "Totem Retrô", valorReferencia: 1890 },
+          { nome: "Polaroid + Guest Book", valorReferencia: 2190 },
+        ],
+      },
+      {
+        categoria: "Mão de Obra Extra",
+        explicacao: "Reforço na equipe Black Tie para eventos maiores ou com demanda extra de atendimento.",
+        fotos: [],
+        itens: [{ nome: "Mão de obra extra (Black Tie)", valorReferencia: 350 }],
+      },
+      {
+        categoria: "Upgrade de Bebida",
+        explicacao: "Troca do rótulo padrão por uma versão superior, para elevar ainda mais o nível do bar.",
+        fotos: [],
+        itens: [{ nome: "Upgrade do Gin Seagers para Gordon's", valorReferencia: 1200 }],
+      },
+      {
+        categoria: "Estrutura de Bar",
+        explicacao: "Modelos de estrutura para o bar — reto, em U ou ilha — em diferentes acabamentos.",
+        fotos: [],
+        itens: [
+          {
+            nome: "Estrutura de bar (reto, \"U\", ilha) — Boiserie verde/branco/azul, Ripado, Treliça",
+            valorReferencia: null,
+            observacao: "sem valor fixo",
+          },
+        ],
+      },
     ],
 
     // Carta de Coquetéis 2027. Todos podem ser feitos alcoólicos ou não alcoólicos, exceto os mocktails.

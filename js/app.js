@@ -6,6 +6,10 @@
   function garantirCamposCompartilhados(alvo) {
     if (!Array.isArray(alvo.drinksSelecionados)) alvo.drinksSelecionados = [];
     if (!Array.isArray(alvo.caipirinhas) || alvo.caipirinhas.length === 0) alvo.caipirinhas = ["", ""];
+    if (!Array.isArray(alvo.adicionaisSelecionados)) alvo.adicionaisSelecionados = [];
+    if (!alvo.resumoCompra || typeof alvo.resumoCompra !== "object") {
+      alvo.resumoCompra = { pacoteEscolhido: null, tipoBebidaEscolhido: null, opcaoPagamentoEscolhida: null };
+    }
     return alvo;
   }
 
@@ -22,7 +26,7 @@
   const tiposAtivos = proposta.tiposAtivos;
   const formatarDataBr = proposta.formatarDataBr;
 
-  const estadoApresentacao = { modo: "bemvindos", pacoteEmFoco: "resumo" };
+  const estadoApresentacao = { modo: "bemvindos", pacoteEmFoco: "resumo", abaAtiva: "pacotes" };
 
   function enviarApresentacaoParaBemVindos() {
     if (estadoApresentacao.modo === "espelho") {
@@ -430,7 +434,7 @@
   function adicionarCortesia(idPacote, input) {
     const nome = input.value.trim();
     if (!nome) return;
-    const doCatalogo = CONFIG.catalogoAdicionais.find((a) => a.nome.toLowerCase() === nome.toLowerCase());
+    const doCatalogo = proposta.itensAdicionaisPlano().find((a) => a.nome.toLowerCase() === nome.toLowerCase());
     estado.pacotes[idPacote].cortesias.push({
       nome: doCatalogo ? doCatalogo.nome : nome,
       valorReferencia: doCatalogo ? doCatalogo.valorReferencia : null,
@@ -555,6 +559,10 @@
   // Mede sobreposição em pixels com a janela visível (não a razão em relação à
   // altura da própria seção), para funcionar bem em qualquer altura de tela ou
   // de seção — ao contrário de IntersectionObserver com thresholds fixos.
+  // Só atua enquanto a aba "Pacotes" está ativa; as outras abas controlam o foco
+  // da TV por conta própria (ver configurarAbas).
+  let atualizarFocoPacote = function () {};
+
   function configurarFocoDePacote() {
     const secaoResumo = document.getElementById("secao-drinks-caipirinhas");
     const secoes = [
@@ -564,6 +572,7 @@
     if (!secoes.length) return;
 
     function atualizarFoco() {
+      if (estadoApresentacao.abaAtiva !== "pacotes") return;
       const alturaJanela = window.innerHeight;
       let melhorSecao = null;
       let melhorSobreposicao = 0;
@@ -583,6 +592,8 @@
       }
     }
 
+    atualizarFocoPacote = atualizarFoco;
+
     let agendado = false;
     window.addEventListener("scroll", () => {
       if (agendado) return;
@@ -593,6 +604,32 @@
       });
     });
     atualizarFoco();
+  }
+
+  // ---------------------------------------------------------------------
+  // Navegação em abas (Pacotes / Adicionais / Resumo)
+  // ---------------------------------------------------------------------
+
+  function configurarAbas() {
+    const botoes = Array.from(document.querySelectorAll(".aba-botao"));
+    botoes.forEach((botao) => {
+      botao.addEventListener("click", () => {
+        const aba = botao.dataset.aba;
+        if (aba === estadoApresentacao.abaAtiva) return;
+        botoes.forEach((b) => b.classList.toggle("ativa", b === botao));
+        document.querySelectorAll(".aba-conteudo").forEach((el) => el.classList.add("oculto"));
+        document.getElementById(`aba-${aba}`).classList.remove("oculto");
+        estadoApresentacao.abaAtiva = aba;
+
+        if (aba === "pacotes") {
+          atualizarFocoPacote();
+        } else if (aba === "resumo") {
+          estadoApresentacao.pacoteEmFoco = "resumo-compra";
+          if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
+        }
+        // Na aba "adicionais" a TV mantém o que já estava mostrando.
+      });
+    });
   }
 
   // ---------------------------------------------------------------------
@@ -707,8 +744,44 @@
       </div>`;
   }
 
+  function htmlPaginaResumoCompra() {
+    const dados = proposta.dadosResumoCompra(estado);
+    if (!dados || dados.avisoPacote) return "";
+
+    const adicionaisHtml = dados.adicionais.length
+      ? dados.adicionais
+          .map(
+            (a) =>
+              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valor)}</span></div>`
+          )
+          .join("")
+      : `<p class="inclui-impressao">Nenhum adicional selecionado.</p>`;
+
+    return `
+      <div class="pagina-impressao pagina-resumo">
+        <div class="cabecalho-impressao">
+          <h2 class="titulo-impressao">Resumo da compra</h2>
+          <img class="logo-impressao" style="width:60px;" src="assets/logo_madz_branco_transparente.png" alt="MADZ Eventos">
+        </div>
+        <div class="resumo-impressao-linha-pacote">
+          <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
+          <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+        </div>
+        <div class="resumo-impressao-subtitulo">Adicionais selecionados</div>
+        ${adicionaisHtml}
+        <div class="resumo-impressao-total">
+          <span>Total geral</span>
+          <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
+        </div>
+      </div>`;
+  }
+
   function montarImpressao() {
-    const paginas = [htmlPaginaCapa(), ...Object.keys(CONFIG.pacotes).map(htmlPaginaPacote)];
+    const paginas = [
+      htmlPaginaCapa(),
+      ...Object.keys(CONFIG.pacotes).map(htmlPaginaPacote),
+      htmlPaginaResumoCompra(),
+    ];
     document.getElementById("area-impressao").innerHTML = paginas.join("");
   }
 
@@ -718,7 +791,7 @@
 
   function montarDatalistCortesias() {
     const datalist = document.getElementById("catalogo-adicionais");
-    datalist.innerHTML = CONFIG.catalogoAdicionais.map((a) => `<option value="${escaparHtml(a.nome)}">`).join("");
+    datalist.innerHTML = proposta.itensAdicionaisPlano().map((a) => `<option value="${escaparHtml(a.nome)}">`).join("");
   }
 
   // Garante que as fontes (Great Vibes no nome do casal, Cormorant Garamond nos
@@ -747,6 +820,256 @@
   }
 
   // ---------------------------------------------------------------------
+  // Aba "Adicionais" (vitrine)
+  // ---------------------------------------------------------------------
+
+  function chaveAdicional(categoria, nome) {
+    return `${categoria}::${nome}`;
+  }
+
+  function adicionalSelecionado(categoria, nome) {
+    return estado.adicionaisSelecionados.find((a) => a.categoria === categoria && a.nome === nome);
+  }
+
+  function htmlItemAdicional(categoria, item) {
+    const chave = chaveAdicional(categoria, item.nome);
+    const selecionado = adicionalSelecionado(categoria, item.nome);
+    const observacao = item.observacao ? `<span class="item-adicional-observacao">${item.observacao}</span>` : "";
+
+    if (item.valorReferencia == null) {
+      return `
+        <div class="item-adicional" data-chave="${chave}">
+          <label>
+            <input type="checkbox" data-acao="toggle-adicional-manual" data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" ${selecionado ? "checked" : ""}>
+            ${escaparHtml(item.nome)} ${observacao}
+          </label>
+          <span class="item-adicional-valor">
+            R$ <input type="number" min="0" step="1" placeholder="valor combinado" data-acao="valor-adicional-manual"
+              data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${selecionado && selecionado.valor ? selecionado.valor : ""}"
+              ${selecionado ? "" : "disabled"}>
+          </span>
+        </div>`;
+    }
+
+    return `
+      <div class="item-adicional" data-chave="${chave}">
+        <label>
+          <input type="checkbox" data-acao="toggle-adicional" data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" data-valor="${item.valorReferencia}" ${selecionado ? "checked" : ""}>
+          ${escaparHtml(item.nome)} ${observacao}
+        </label>
+        <span class="item-adicional-valor">${calc.formatarMoeda(item.valorReferencia)}</span>
+      </div>`;
+  }
+
+  function htmlCategoriaAdicional(categoria) {
+    const fotosHtml = categoria.fotos.length
+      ? categoria.fotos.map((src) => `<img class="categoria-adicional-foto" src="${src}" alt="${categoria.categoria}">`).join("")
+      : `<div class="categoria-adicional-foto-placeholder">Foto a confirmar</div><div class="categoria-adicional-foto-placeholder">Foto a confirmar</div>`;
+
+    return `
+      <div class="categoria-adicional">
+        <div class="categoria-adicional-topo">
+          <div class="categoria-adicional-info">
+            <h2 class="categoria-adicional-nome">${categoria.categoria}</h2>
+            <p class="categoria-adicional-explicacao">${categoria.explicacao}</p>
+          </div>
+          <div class="categoria-adicional-fotos">${fotosHtml}</div>
+        </div>
+        ${categoria.itens.map((item) => htmlItemAdicional(categoria.categoria, item)).join("")}
+      </div>`;
+  }
+
+  function atualizarTotalAdicionais() {
+    const elemento = document.getElementById("adicionais-total-barra");
+    if (!elemento) return;
+    const total = estado.adicionaisSelecionados.reduce((soma, a) => soma + (a.valor || 0), 0);
+    const quantidade = estado.adicionaisSelecionados.length;
+    const rotulo = quantidade === 1 ? "adicional selecionado" : "adicionais selecionados";
+    elemento.innerHTML = `<span>${quantidade} ${rotulo}</span><strong>Total: ${calc.formatarMoeda(total)}</strong>`;
+  }
+
+  function montarAbaAdicionais() {
+    const container = document.getElementById("aba-adicionais");
+    container.innerHTML = `
+      <div class="adicionais-cabecalho">
+        <h1 class="pacote-titulo" style="font-size:1.8rem;">Adicionais</h1>
+        <p>Marque com o casal os extras escolhidos — o valor entra direto no resumo final.</p>
+      </div>
+      ${CONFIG.catalogoAdicionais.map(htmlCategoriaAdicional).join("")}
+      <div class="adicionais-total-barra" id="adicionais-total-barra"></div>
+    `;
+    atualizarTotalAdicionais();
+
+    if (container.dataset.eventosLigados) return;
+    container.dataset.eventosLigados = "1";
+
+    container.addEventListener("change", (evento) => {
+      const alvo = evento.target;
+      const categoria = alvo.dataset.categoria;
+      const nome = alvo.dataset.nome;
+      if (!categoria || !nome) return;
+
+      if (alvo.dataset.acao === "toggle-adicional") {
+        if (alvo.checked) {
+          estado.adicionaisSelecionados.push({ categoria, nome, valor: Number(alvo.dataset.valor) || 0 });
+        } else {
+          estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
+            (a) => !(a.categoria === categoria && a.nome === nome)
+          );
+        }
+        persistir();
+        atualizarTotalAdicionais();
+      } else if (alvo.dataset.acao === "toggle-adicional-manual") {
+        const linha = alvo.closest(".item-adicional");
+        const inputValor = linha.querySelector('[data-acao="valor-adicional-manual"]');
+        if (alvo.checked) {
+          estado.adicionaisSelecionados.push({ categoria, nome, valor: 0 });
+          inputValor.disabled = false;
+          inputValor.focus();
+        } else {
+          estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
+            (a) => !(a.categoria === categoria && a.nome === nome)
+          );
+          inputValor.disabled = true;
+          inputValor.value = "";
+        }
+        persistir();
+        atualizarTotalAdicionais();
+      }
+    });
+
+    container.addEventListener("input", (evento) => {
+      const alvo = evento.target;
+      if (alvo.dataset.acao !== "valor-adicional-manual") return;
+      const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
+      if (!item) return;
+      item.valor = parseFloat(alvo.value) || 0;
+      persistir();
+      atualizarTotalAdicionais();
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Aba "Resumo" (resumo da compra)
+  // ---------------------------------------------------------------------
+
+  function htmlPilulasResumo() {
+    const r = estado.resumoCompra;
+    const pilulasPacote = Object.keys(CONFIG.pacotes)
+      .map(
+        (id) =>
+          `<button type="button" class="resumo-pilula${r.pacoteEscolhido === id ? " selecionada" : ""}" data-acao="resumo-pacote" data-valor="${id}">${CONFIG.pacotes[id].nome}</button>`
+      )
+      .join("");
+
+    let pilulasBebida = `<p class="resumo-vazio" style="padding:0.4rem 0;">Escolha o pacote primeiro</p>`;
+    let pilulasPagamento = `<p class="resumo-vazio" style="padding:0.4rem 0;">Escolha o pacote primeiro</p>`;
+
+    if (r.pacoteEscolhido) {
+      const configPacote = CONFIG.pacotes[r.pacoteEscolhido];
+      const estadoPacote = estado.pacotes[r.pacoteEscolhido];
+      pilulasBebida = tiposAtivos(estadoPacote)
+        .map(
+          (tipo) =>
+            `<button type="button" class="resumo-pilula${r.tipoBebidaEscolhido === tipo.id ? " selecionada" : ""}" data-acao="resumo-bebida" data-valor="${tipo.id}">${tipo.nome}</button>`
+        )
+        .join("");
+      pilulasPagamento = configPacote.opcoesPagamento
+        .map(
+          (opcao) =>
+            `<button type="button" class="resumo-pilula${r.opcaoPagamentoEscolhida === opcao.id ? " selecionada" : ""}" data-acao="resumo-pagamento" data-valor="${opcao.id}">${opcao.nome}</button>`
+        )
+        .join("");
+    }
+
+    return `
+      <div class="resumo-selecoes">
+        <div class="resumo-selecao-grupo">
+          <span>Pacote</span>
+          <div class="resumo-pilulas">${pilulasPacote}</div>
+        </div>
+        <div class="resumo-selecao-grupo">
+          <span>Bebida</span>
+          <div class="resumo-pilulas">${pilulasBebida}</div>
+        </div>
+        <div class="resumo-selecao-grupo">
+          <span>Forma de pagamento</span>
+          <div class="resumo-pilulas">${pilulasPagamento}</div>
+        </div>
+      </div>`;
+  }
+
+  function htmlDetalheResumo() {
+    const dados = proposta.dadosResumoCompra(estado);
+    if (!dados) {
+      return `<p class="resumo-vazio">Escolha o pacote, a bebida e a forma de pagamento acima para ver o total.</p>`;
+    }
+    if (dados.avisoPacote) {
+      return `<p class="resumo-vazio">${dados.avisoPacote}</p>`;
+    }
+
+    const adicionaisHtml = dados.adicionais.length
+      ? dados.adicionais
+          .map(
+            (a) =>
+              `<div class="resumo-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valor)}</span></div>`
+          )
+          .join("")
+      : `<p class="resumo-vazio" style="padding:0.6rem 0;">Nenhum adicional selecionado.</p>`;
+
+    return `
+      <div class="resumo-linha-pacote">
+        <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
+        <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+      </div>
+      <div class="resumo-subtitulo">Adicionais selecionados</div>
+      ${adicionaisHtml}
+      <div class="resumo-total-geral">
+        <span>Total geral</span>
+        <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
+      </div>`;
+  }
+
+  function montarAbaResumo() {
+    const container = document.getElementById("aba-resumo");
+    container.innerHTML = `
+      <div class="resumo-cabecalho">
+        <h1 class="pacote-titulo" style="font-size:1.8rem;">Resumo da compra</h1>
+        <p>Escolha o pacote, a bebida e a forma de pagamento para fechar com o casal.</p>
+      </div>
+      ${htmlPilulasResumo()}
+      <div class="resumo-detalhe">${htmlDetalheResumo()}</div>
+    `;
+
+    if (container.dataset.eventosLigados) return;
+    container.dataset.eventosLigados = "1";
+
+    container.addEventListener("click", (evento) => {
+      const alvo = evento.target.closest("[data-acao]");
+      if (!alvo) return;
+      const r = estado.resumoCompra;
+
+      if (alvo.dataset.acao === "resumo-pacote") {
+        r.pacoteEscolhido = alvo.dataset.valor;
+        r.tipoBebidaEscolhido = null;
+        r.opcaoPagamentoEscolhida = null;
+      } else if (alvo.dataset.acao === "resumo-bebida") {
+        r.tipoBebidaEscolhido = alvo.dataset.valor;
+      } else if (alvo.dataset.acao === "resumo-pagamento") {
+        r.opcaoPagamentoEscolhida = alvo.dataset.valor;
+      } else {
+        return;
+      }
+
+      persistir();
+      montarAbaResumo();
+      if (estadoApresentacao.abaAtiva === "resumo" && estadoApresentacao.modo === "espelho") {
+        enviarApresentacaoParaBemVindos();
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // Propostas salvas (reabrir / duplicar / excluir / nova)
   // ---------------------------------------------------------------------
 
@@ -755,6 +1078,8 @@
     preencherCabecalho();
     montarSecaoCompartilhada();
     Object.keys(CONFIG.pacotes).forEach(montarBlocoPacote);
+    montarAbaAdicionais();
+    montarAbaResumo();
     enviarApresentacaoParaBemVindos();
   }
 
@@ -841,6 +1166,9 @@
     montarDatalistCortesias();
     montarSecaoCompartilhada();
     Object.keys(CONFIG.pacotes).forEach(montarBlocoPacote);
+    montarAbaAdicionais();
+    montarAbaResumo();
+    configurarAbas();
     configurarBotoesApresentacao();
     configurarFocoDePacote();
     configurarExportacaoPdf();

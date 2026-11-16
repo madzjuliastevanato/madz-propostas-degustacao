@@ -56,11 +56,21 @@
     </div>
   </header>
 
+  <nav class="abas-navegacao">
+    <button type="button" class="aba-botao ativa" data-aba="pacotes">Pacotes</button>
+    <button type="button" class="aba-botao" data-aba="adicionais">Adicionais</button>
+    <button type="button" class="aba-botao" data-aba="resumo">Resumo</button>
+  </nav>
+
   <main>
-    <section class="pacote" id="secao-drinks-caipirinhas"></section>
-    <section class="pacote" id="pacote-signature"></section>
-    <section class="pacote" id="pacote-elegance"></section>
-    <section class="pacote" id="pacote-select"></section>
+    <div class="aba-conteudo" id="aba-pacotes">
+      <section class="pacote" id="secao-drinks-caipirinhas"></section>
+      <section class="pacote" id="pacote-signature"></section>
+      <section class="pacote" id="pacote-elegance"></section>
+      <section class="pacote" id="pacote-select"></section>
+    </div>
+    <div class="aba-conteudo oculto" id="aba-adicionais"></div>
+    <div class="aba-conteudo oculto" id="aba-resumo"></div>
   </main>
 
   <div id="area-impressao"></div>

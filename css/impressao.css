@@ -242,3 +242,69 @@
   color: var(--cor-texto-suave);
   margin-top: 0.25rem;
 }
+
+/* ---------- Página de resumo da compra ---------- */
+
+.pagina-resumo .cabecalho-impressao {
+  justify-content: space-between;
+}
+
+.resumo-impressao-linha-pacote {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 1.2rem 0;
+  border-bottom: 1px solid rgba(201, 163, 90, 0.3);
+}
+
+.resumo-impressao-linha-pacote span {
+  font-size: 1rem;
+  color: #cbb98a;
+}
+
+.resumo-impressao-linha-pacote strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 1.8rem;
+  color: var(--cor-dourado-forte);
+  white-space: nowrap;
+}
+
+.resumo-impressao-subtitulo {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--cor-dourado);
+  margin: 1.6rem 0 0.6rem;
+}
+
+.resumo-impressao-linha-adicional {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.6rem 0;
+  border-bottom: 1px solid var(--cor-borda);
+  font-size: 0.92rem;
+}
+
+.resumo-impressao-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-top: auto;
+  padding-top: 1.4rem;
+  border-top: 1px solid var(--cor-dourado);
+}
+
+.resumo-impressao-total span {
+  font-family: var(--fonte-titulo);
+  font-size: 1.3rem;
+  color: var(--cor-dourado);
+}
+
+.resumo-impressao-total strong {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: 2.6rem;
+  color: var(--cor-dourado-forte);
+}
