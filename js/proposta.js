@@ -158,8 +158,16 @@
     };
   }
 
+  // Índice da foto que deve aparecer em destaque para essa categoria — o vendedor
+  // escolhe clicando nas miniaturas; sem escolha, é a primeira foto do catálogo.
+  function indiceFotoPrincipal(estado, nomeCategoria, totalFotos) {
+    const indice = estado.fotoPrincipalAdicionais ? estado.fotoPrincipalAdicionais[nomeCategoria] : undefined;
+    return typeof indice === "number" && indice >= 0 && indice < totalFotos ? indice : 0;
+  }
+
   // Conteúdo de uma categoria de adicionais (fotos + itens com preço) para a TV
-  // espelhada, enquanto a aba "Adicionais" está em foco.
+  // espelhada, enquanto a aba "Adicionais" está em foco. A foto em destaque (ver
+  // indiceFotoPrincipal) vem primeiro no array — é essa que a TV mostra grande.
   function dadosCategoriaAdicional(estado, nomeCategoria) {
     const categoria = CONFIG.catalogoAdicionais.find((c) => c.categoria === nomeCategoria);
     if (!categoria) return null;
@@ -170,7 +178,10 @@
       const valorExibido = selecionado ? valorEfetivoAdicional(selecionado) : item.valorReferencia;
       return { nome: item.nome, valorExibido, selecionado: Boolean(selecionado) };
     });
-    return { categoria: categoria.categoria, explicacao: categoria.explicacao, fotos: categoria.fotos, itens };
+    const indicePrincipal = indiceFotoPrincipal(estado, nomeCategoria, categoria.fotos.length);
+    const fotos = categoria.fotos.map((src, indice) => ({ src, principal: indice === indicePrincipal }));
+    const fotosOrdenadas = [...fotos].sort((a, b) => (a.principal === b.principal ? 0 : a.principal ? -1 : 1)).map((f) => f.src);
+    return { categoria: categoria.categoria, explicacao: categoria.explicacao, fotos: fotosOrdenadas, itens };
   }
 
   return {
@@ -185,5 +196,6 @@
     valorEfetivoAdicional,
     dadosResumoCompra,
     dadosCategoriaAdicional,
+    indiceFotoPrincipal,
   };
 });

@@ -86,8 +86,12 @@
       drinksSelecionados: [],
       caipirinhas: ["", ""],
       // Adicionais marcados na vitrine, independente do pacote (mesma lógica dos drinks).
-      // Cada item: { categoria, nome, valor }.
+      // Cada item: { categoria, nome, valorTotal, valorFinal }.
       adicionaisSelecionados: [],
+      // Qual foto de cada categoria está em destaque (índice no array "fotos" do
+      // config) — o vendedor troca clicando nas miniaturas; a TV mostra essa como
+      // a foto principal da galeria. Categoria sem entrada aqui usa a primeira foto.
+      fotoPrincipalAdicionais: {},
       // Escolha final para o resumo da compra — preenchida na aba "Resumo".
       resumoCompra: {
         pacoteEscolhido: null,

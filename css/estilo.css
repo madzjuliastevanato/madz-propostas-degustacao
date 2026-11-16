@@ -691,11 +691,35 @@ main {
   flex-shrink: 0;
 }
 
+.categoria-adicional-foto-botao {
+  padding: 0;
+  border: 2px solid transparent;
+  border-radius: 8px;
+  background: none;
+  line-height: 0;
+  cursor: pointer;
+  position: relative;
+}
+
+.categoria-adicional-foto-botao:hover {
+  border-color: var(--cor-borda-nacional);
+}
+
+.categoria-adicional-foto-botao.selecionada {
+  border-color: var(--cor-dourado);
+}
+
 .categoria-adicional-foto {
   width: 110px;
   height: 82px;
-  border-radius: 8px;
+  border-radius: 6px;
   object-fit: cover;
+  display: block;
+  opacity: 0.8;
+}
+
+.categoria-adicional-foto-botao.selecionada .categoria-adicional-foto {
+  opacity: 1;
 }
 
 .categoria-adicional-foto-placeholder {

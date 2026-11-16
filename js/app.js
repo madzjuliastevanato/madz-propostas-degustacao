@@ -7,6 +7,9 @@
     if (!Array.isArray(alvo.drinksSelecionados)) alvo.drinksSelecionados = [];
     if (!Array.isArray(alvo.caipirinhas) || alvo.caipirinhas.length === 0) alvo.caipirinhas = ["", ""];
     if (!Array.isArray(alvo.adicionaisSelecionados)) alvo.adicionaisSelecionados = [];
+    if (!alvo.fotoPrincipalAdicionais || typeof alvo.fotoPrincipalAdicionais !== "object") {
+      alvo.fotoPrincipalAdicionais = {};
+    }
     if (!alvo.resumoCompra || typeof alvo.resumoCompra !== "object") {
       alvo.resumoCompra = { pacoteEscolhido: null, tipoBebidaEscolhido: null, opcaoPagamentoEscolhida: null };
     }
@@ -925,8 +928,18 @@
   }
 
   function htmlCategoriaAdicional(categoria) {
+    const indicePrincipal = proposta.indiceFotoPrincipal(estado, categoria.categoria, categoria.fotos.length);
     const fotosHtml = categoria.fotos.length
-      ? categoria.fotos.map((src) => `<img class="categoria-adicional-foto" src="${src}" alt="${categoria.categoria}">`).join("")
+      ? categoria.fotos
+          .map(
+            (src, indice) => `
+              <button type="button" class="categoria-adicional-foto-botao${indice === indicePrincipal ? " selecionada" : ""}"
+                data-acao="selecionar-foto-principal" data-categoria="${categoria.categoria}" data-indice="${indice}"
+                title="Mostrar esta foto em destaque na tela espelhada">
+                <img class="categoria-adicional-foto" src="${src}" alt="${categoria.categoria}">
+              </button>`
+          )
+          .join("")
       : `<div class="categoria-adicional-foto-placeholder">Foto a confirmar</div><div class="categoria-adicional-foto-placeholder">Foto a confirmar</div>`;
 
     return `
@@ -965,6 +978,19 @@
 
     if (container.dataset.eventosLigados) return;
     container.dataset.eventosLigados = "1";
+
+    container.addEventListener("click", (evento) => {
+      const botao = evento.target.closest('[data-acao="selecionar-foto-principal"]');
+      if (!botao) return;
+      const categoria = botao.dataset.categoria;
+      const indice = Number(botao.dataset.indice);
+      estado.fotoPrincipalAdicionais[categoria] = indice;
+      persistir();
+      botao.parentElement.querySelectorAll(".categoria-adicional-foto-botao").forEach((b) => {
+        b.classList.toggle("selecionada", b === botao);
+      });
+      atualizarTvSeNecessario();
+    });
 
     container.addEventListener("change", (evento) => {
       const alvo = evento.target;
@@ -1034,18 +1060,28 @@
         persistir();
         atualizarTotalAdicionais();
         atualizarTvSeNecessario();
-        // Atualiza só a linha deste item, pra mostrar o "− Rx de desconto" sem perder o foco do campo.
+
+        // Atualiza só o "− Rx de desconto" e o risco no valor cheio, sem recriar o
+        // input (recriá-lo durante a digitação faz o cursor voltar pro início e a
+        // ordem dos números sair invertida).
         const linha = alvo.closest(".item-adicional");
         const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === alvo.dataset.categoria);
         const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === alvo.dataset.nome);
         if (linha && itemCfg) {
-          const temFoco = document.activeElement === alvo;
-          linha.outerHTML = htmlItemAdicional(alvo.dataset.categoria, itemCfg);
-          if (temFoco) {
-            const novoInput = container.querySelector(
-              `[data-acao="valor-final-adicional"][data-categoria="${alvo.dataset.categoria}"][data-nome="${CSS.escape(alvo.dataset.nome)}"]`
-            );
-            if (novoInput) novoInput.focus();
+          const temDesconto = item.valorFinal != null && item.valorFinal !== itemCfg.valorReferencia;
+          const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+          if (valorTotalSpan) valorTotalSpan.classList.toggle("com-desconto", temDesconto);
+          let infoDesconto = linha.querySelector(".item-adicional-desconto-info");
+          if (temDesconto) {
+            const desconto = itemCfg.valorReferencia - item.valorFinal;
+            if (!infoDesconto) {
+              infoDesconto = document.createElement("span");
+              infoDesconto.className = "item-adicional-desconto-info";
+              linha.querySelector(".item-adicional-valor-final-campo").appendChild(infoDesconto);
+            }
+            infoDesconto.textContent = `− ${calc.formatarMoeda(desconto)}`;
+          } else if (infoDesconto) {
+            infoDesconto.remove();
           }
         }
       }
