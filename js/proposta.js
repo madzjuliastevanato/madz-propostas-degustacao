@@ -109,6 +109,7 @@
       inclui: configPacote.inclui,
       tipos,
       cortesias: estadoPacote.cortesias,
+      cortesiasReveladas: Boolean(estadoPacote.cortesiasReveladas),
       valoresRevelados: Boolean(estadoPacote.valoresRevelados),
       linhas,
     };

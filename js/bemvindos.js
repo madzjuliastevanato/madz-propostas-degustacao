@@ -49,11 +49,12 @@
   function renderizarPacote(estado, idPacote) {
     const dados = proposta.dadosPacote(estado, idPacote);
 
-    const blocoCortesias = dados.cortesias.length
-      ? `
+    const blocoCortesias =
+      dados.cortesias.length && dados.cortesiasReveladas
+        ? `
         <h3 class="apresentacao-secao-titulo">Cortesias</h3>
         <div class="apresentacao-cortesias">${dados.cortesias.map((c) => `<span class="cortesia-chip-tv">${escaparHtml(c.nome)}</span>`).join("")}</div>`
-      : "";
+        : "";
 
     let blocoValores;
     if (dados.valoresRevelados) {
@@ -75,11 +76,13 @@
                 </div>`;
             })
             .join("");
+          const marcas = CONFIG.rotulosBebidas[tipo.id];
           return `
             <div class="coluna-tipo-tv">
               <div class="coluna-tipo-tv-cabecalho">
                 <div class="tipo-nome-tv">${tipo.nome}</div>
                 <div class="valor-convidado-tv">${calc.formatarMoeda(valorAjustado, { comCentavos: true })} / convidado</div>
+                ${marcas ? `<div class="marcas-tv">${marcas}</div>` : ""}
               </div>
               ${linhas}
             </div>`;

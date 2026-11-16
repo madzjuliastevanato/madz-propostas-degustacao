@@ -119,9 +119,11 @@
 
   function htmlCardBebida(idPacote, tipo) {
     const oculto = tipo.id === "semAlcool" ? " oculto" : "";
+    const marcas = CONFIG.rotulosBebidas[tipo.id];
     return `
       <div class="card-bebida ${tipo.classe}${oculto}" data-tipo-card="${tipo.id}">
         <div class="card-bebida-titulo">${tipo.nome}</div>
+        ${marcas ? `<div class="card-bebida-marcas">${marcas}</div>` : ""}
         <div class="card-bebida-linha">
           <label for="valor-${idPacote}-${tipo.id}" style="margin:0;">Valor por convidado</label>
           <input type="number" min="0" step="1" id="valor-${idPacote}-${tipo.id}" data-acao="valor-convidado" data-pacote="${idPacote}" data-tipo="${tipo.id}">
@@ -307,6 +309,10 @@
             Mostrar card "Sem álcool"
           </label>
           <label class="toggle-sem-alcool" style="margin:0;">
+            <input type="checkbox" data-acao="toggle-revelar-cortesias" data-pacote="${idPacote}">
+            Revelar cortesias na TV
+          </label>
+          <label class="toggle-sem-alcool" style="margin:0;">
             <input type="checkbox" data-acao="toggle-revelar-valores" data-pacote="${idPacote}">
             Revelar valores na TV
           </label>
@@ -341,6 +347,8 @@
 
     document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-sem-alcool"]').checked =
       estado.pacotes[idPacote].ativoSemAlcool;
+    document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-revelar-cortesias"]').checked =
+      estado.pacotes[idPacote].cortesiasReveladas;
     document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-revelar-valores"]').checked =
       estado.pacotes[idPacote].valoresRevelados;
 
@@ -391,6 +399,12 @@
         persistir();
         atualizarVisibilidadeSemAlcool(idPacote);
         recalcularPacote(idPacote);
+      } else if (alvo.dataset.acao === "toggle-revelar-cortesias") {
+        estado.pacotes[idPacote].cortesiasReveladas = alvo.checked;
+        persistir();
+        if (estadoApresentacao.modo === "espelho" && estadoApresentacao.pacoteEmFoco === idPacote) {
+          enviarApresentacaoParaBemVindos();
+        }
       } else if (alvo.dataset.acao === "toggle-revelar-valores") {
         estado.pacotes[idPacote].valoresRevelados = alvo.checked;
         persistir();
@@ -538,32 +552,47 @@
 
   // Detecta qual pacote está mais visível na tela do vendedor, para a TV (quando
   // espelhada) acompanhar automaticamente o que está sendo apresentado ao casal.
+  // Mede sobreposição em pixels com a janela visível (não a razão em relação à
+  // altura da própria seção), para funcionar bem em qualquer altura de tela ou
+  // de seção — ao contrário de IntersectionObserver com thresholds fixos.
   function configurarFocoDePacote() {
     const secaoResumo = document.getElementById("secao-drinks-caipirinhas");
     const secoes = [
       secaoResumo,
       ...Object.keys(CONFIG.pacotes).map((id) => document.getElementById(`pacote-${id}`)),
     ].filter(Boolean);
-    if (!secoes.length || typeof IntersectionObserver === "undefined") return;
+    if (!secoes.length) return;
 
-    const observador = new IntersectionObserver(
-      (entradas) => {
-        let maisVisivel = null;
-        entradas.forEach((entrada) => {
-          if (entrada.isIntersecting && (!maisVisivel || entrada.intersectionRatio > maisVisivel.intersectionRatio)) {
-            maisVisivel = entrada;
-          }
-        });
-        if (!maisVisivel) return;
-        const idFoco = maisVisivel.target === secaoResumo ? "resumo" : maisVisivel.target.id.replace("pacote-", "");
-        if (idFoco !== estadoApresentacao.pacoteEmFoco) {
-          estadoApresentacao.pacoteEmFoco = idFoco;
-          if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
+    function atualizarFoco() {
+      const alturaJanela = window.innerHeight;
+      let melhorSecao = null;
+      let melhorSobreposicao = 0;
+      secoes.forEach((secao) => {
+        const r = secao.getBoundingClientRect();
+        const sobreposicao = Math.min(r.bottom, alturaJanela) - Math.max(r.top, 0);
+        if (sobreposicao > melhorSobreposicao) {
+          melhorSobreposicao = sobreposicao;
+          melhorSecao = secao;
         }
-      },
-      { threshold: [0.3, 0.5, 0.7] }
-    );
-    secoes.forEach((secao) => observador.observe(secao));
+      });
+      if (!melhorSecao) return;
+      const idFoco = melhorSecao === secaoResumo ? "resumo" : melhorSecao.id.replace("pacote-", "");
+      if (idFoco !== estadoApresentacao.pacoteEmFoco) {
+        estadoApresentacao.pacoteEmFoco = idFoco;
+        if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
+      }
+    }
+
+    let agendado = false;
+    window.addEventListener("scroll", () => {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(() => {
+        agendado = false;
+        atualizarFoco();
+      });
+    });
+    atualizarFoco();
   }
 
   // ---------------------------------------------------------------------
@@ -643,11 +672,13 @@
               </div>`;
           })
           .join("");
+        const marcas = CONFIG.rotulosBebidas[tipo.id];
         return `
           <div class="coluna-tipo-impressao">
             <div class="coluna-tipo-impressao-cabecalho">
               <div class="tipo-nome">${tipo.nome}</div>
               <div class="valor-convidado">${calc.formatarMoeda(valorAjustado, { comCentavos: true })} / convidado</div>
+              ${marcas ? `<div class="marcas-impressao">${marcas}</div>` : ""}
             </div>
             ${linhas}
           </div>`;

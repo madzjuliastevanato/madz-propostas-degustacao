@@ -55,6 +55,7 @@
       percentualHoraExtra: CONFIG.horas.percentualPorHoraExtraPadrao,
       descontos,
       numeroParcelasBoletoManual: null,
+      cortesiasReveladas: false,
       valoresRevelados: false,
       cortesias: [],
     };

@@ -266,6 +266,14 @@ body.modo-apresentacao .fundo-gradiente {
   font-size: clamp(0.78rem, 1.1vw, 1rem);
 }
 
+.marcas-tv {
+  display: block;
+  margin-top: 0.4rem;
+  color: #716d67;
+  font-size: clamp(0.68rem, 0.95vw, 0.85rem);
+  line-height: 1.4;
+}
+
 .linha-opcao-tv {
   padding: clamp(0.6rem, 1.4vh, 1.1rem) 0;
   border-bottom: 1px solid rgba(201, 163, 90, 0.22);

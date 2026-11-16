@@ -290,6 +290,13 @@ main {
   color: var(--cor-dourado-forte);
 }
 
+.card-bebida-marcas {
+  font-size: 0.76rem;
+  color: var(--cor-texto-suave);
+  line-height: 1.4;
+  margin: -0.3rem 0 0.8rem;
+}
+
 .card-bebida-linha {
   display: flex;
   align-items: center;

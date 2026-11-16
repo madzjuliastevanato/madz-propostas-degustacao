@@ -23,6 +23,12 @@
 
     validadePropostaDiasPadrao: 10,
 
+    // Marcas inclusas em cada tipo de bebida, iguais para todos os pacotes.
+    rotulosBebidas: {
+      nacionais: "Vodka Smirnoff, Saquê Azuma Kirin, Cachaça Sagatiba e Velho Barreiro, Rum Bacardi Carta Blanca, Gin Seagers, H2Oh e Água Mineral",
+      importados: "Vodka Absolut, Saquê Azuma Kirin, Cachaça 1922, Rum Havana Club, Gin Tanqueray, H2Oh e Água Mineral",
+    },
+
     pacotes: {
       signature: {
         id: "signature",
