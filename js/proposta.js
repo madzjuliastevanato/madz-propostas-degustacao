@@ -123,6 +123,12 @@
     );
   }
 
+  // Valor que de fato conta para o total: o valor final (com desconto), quando o
+  // vendedor preencheu um; senão o valor total (cheio) do item.
+  function valorEfetivoAdicional(adicional) {
+    return adicional.valorFinal != null ? adicional.valorFinal : adicional.valorTotal;
+  }
+
   // Resumo da compra: pacote + bebida + forma de pagamento escolhidos na aba
   // "Resumo", somados aos adicionais marcados na vitrine. Retorna null enquanto
   // a escolha não estiver completa.
@@ -135,7 +141,8 @@
     if (!opcao) return null;
     const tipoInfo = TIPOS_BEBIDA.find((t) => t.id === r.tipoBebidaEscolhido);
     const resultado = calcularOpcaoParaTipo(estado, r.pacoteEscolhido, r.tipoBebidaEscolhido, opcao);
-    const totalAdicionais = estado.adicionaisSelecionados.reduce((soma, a) => soma + (a.valor || 0), 0);
+    const adicionais = estado.adicionaisSelecionados.map((a) => ({ ...a, valorExibido: valorEfetivoAdicional(a) }));
+    const totalAdicionais = adicionais.reduce((soma, a) => soma + (a.valorExibido || 0), 0);
 
     return {
       nomeCasal: estado.cabecalho.nomeCasal,
@@ -145,10 +152,25 @@
       totalPacote: resultado.totalComDesconto,
       detalhePacote: resultado.detalhe,
       avisoPacote: resultado.aviso,
-      adicionais: estado.adicionaisSelecionados,
+      adicionais,
       totalAdicionais,
       totalGeral: resultado.aviso ? null : resultado.totalComDesconto + totalAdicionais,
     };
+  }
+
+  // Conteúdo de uma categoria de adicionais (fotos + itens com preço) para a TV
+  // espelhada, enquanto a aba "Adicionais" está em foco.
+  function dadosCategoriaAdicional(estado, nomeCategoria) {
+    const categoria = CONFIG.catalogoAdicionais.find((c) => c.categoria === nomeCategoria);
+    if (!categoria) return null;
+    const itens = categoria.itens.map((item) => {
+      const selecionado = estado.adicionaisSelecionados.find(
+        (a) => a.categoria === nomeCategoria && a.nome === item.nome
+      );
+      const valorExibido = selecionado ? valorEfetivoAdicional(selecionado) : item.valorReferencia;
+      return { nome: item.nome, valorExibido, selecionado: Boolean(selecionado) };
+    });
+    return { categoria: categoria.categoria, explicacao: categoria.explicacao, fotos: categoria.fotos, itens };
   }
 
   return {
@@ -160,6 +182,8 @@
     dadosResumo,
     dadosPacote,
     itensAdicionaisPlano,
+    valorEfetivoAdicional,
     dadosResumoCompra,
+    dadosCategoriaAdicional,
   };
 });

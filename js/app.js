@@ -28,6 +28,15 @@
 
   const estadoApresentacao = { modo: "bemvindos", pacoteEmFoco: "resumo", abaAtiva: "pacotes" };
 
+  // Reenvia para a TV quando a aba atual é uma das que ela espelha ao vivo
+  // (Adicionais e Resumo acompanham cada marcação/edição; Pacotes é via scroll).
+  function atualizarTvSeNecessario() {
+    if (estadoApresentacao.modo !== "espelho") return;
+    if (estadoApresentacao.abaAtiva === "adicionais" || estadoApresentacao.abaAtiva === "resumo") {
+      enviarApresentacaoParaBemVindos();
+    }
+  }
+
   function enviarApresentacaoParaBemVindos() {
     if (estadoApresentacao.modo === "espelho") {
       canalBemVindos.enviar({
@@ -606,6 +615,47 @@
     atualizarFoco();
   }
 
+  // Mesma lógica, mas para as categorias dentro da aba "Adicionais" — a TV
+  // acompanha qual categoria o vendedor está mostrando (fotos + preços).
+  let atualizarFocoAdicional = function () {};
+
+  function configurarFocoDeAdicional() {
+    function atualizarFoco() {
+      if (estadoApresentacao.abaAtiva !== "adicionais") return;
+      const secoes = Array.from(document.querySelectorAll("#aba-adicionais .categoria-adicional"));
+      if (!secoes.length) return;
+      const alturaJanela = window.innerHeight;
+      let melhorSecao = null;
+      let melhorSobreposicao = 0;
+      secoes.forEach((secao) => {
+        const r = secao.getBoundingClientRect();
+        const sobreposicao = Math.min(r.bottom, alturaJanela) - Math.max(r.top, 0);
+        if (sobreposicao > melhorSobreposicao) {
+          melhorSobreposicao = sobreposicao;
+          melhorSecao = secao;
+        }
+      });
+      if (!melhorSecao) return;
+      const idFoco = "adicional:" + melhorSecao.dataset.categoria;
+      if (idFoco !== estadoApresentacao.pacoteEmFoco) {
+        estadoApresentacao.pacoteEmFoco = idFoco;
+        if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
+      }
+    }
+
+    atualizarFocoAdicional = atualizarFoco;
+
+    let agendado = false;
+    window.addEventListener("scroll", () => {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(() => {
+        agendado = false;
+        atualizarFoco();
+      });
+    });
+  }
+
   // ---------------------------------------------------------------------
   // Navegação em abas (Pacotes / Adicionais / Resumo)
   // ---------------------------------------------------------------------
@@ -623,11 +673,12 @@
 
         if (aba === "pacotes") {
           atualizarFocoPacote();
+        } else if (aba === "adicionais") {
+          atualizarFocoAdicional();
         } else if (aba === "resumo") {
           estadoApresentacao.pacoteEmFoco = "resumo-compra";
           if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
         }
-        // Na aba "adicionais" a TV mantém o que já estava mostrando.
       });
     });
   }
@@ -752,7 +803,7 @@
       ? dados.adicionais
           .map(
             (a) =>
-              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valor)}</span></div>`
+              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valorExibido)}</span></div>`
           )
           .join("")
       : `<p class="inclui-impressao">Nenhum adicional selecionado.</p>`;
@@ -845,11 +896,14 @@
           </label>
           <span class="item-adicional-valor">
             R$ <input type="number" min="0" step="1" placeholder="valor combinado" data-acao="valor-adicional-manual"
-              data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${selecionado && selecionado.valor ? selecionado.valor : ""}"
+              data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${selecionado && selecionado.valorTotal ? selecionado.valorTotal : ""}"
               ${selecionado ? "" : "disabled"}>
           </span>
         </div>`;
     }
+
+    const temDesconto = selecionado && selecionado.valorFinal != null && selecionado.valorFinal !== item.valorReferencia;
+    const desconto = temDesconto ? item.valorReferencia - selecionado.valorFinal : 0;
 
     return `
       <div class="item-adicional" data-chave="${chave}">
@@ -857,7 +911,16 @@
           <input type="checkbox" data-acao="toggle-adicional" data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" data-valor="${item.valorReferencia}" ${selecionado ? "checked" : ""}>
           ${escaparHtml(item.nome)} ${observacao}
         </label>
-        <span class="item-adicional-valor">${calc.formatarMoeda(item.valorReferencia)}</span>
+        <div class="item-adicional-precos">
+          <span class="item-adicional-valor${temDesconto ? " com-desconto" : ""}">${calc.formatarMoeda(item.valorReferencia)}</span>
+          <span class="item-adicional-valor-final-campo">
+            R$ <input type="number" min="0" step="1" placeholder="valor final" data-acao="valor-final-adicional"
+              data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}"
+              value="${selecionado && selecionado.valorFinal != null ? selecionado.valorFinal : ""}"
+              ${selecionado ? "" : "disabled"}>
+            ${temDesconto ? `<span class="item-adicional-desconto-info">− ${calc.formatarMoeda(desconto)}</span>` : ""}
+          </span>
+        </div>
       </div>`;
   }
 
@@ -867,7 +930,7 @@
       : `<div class="categoria-adicional-foto-placeholder">Foto a confirmar</div><div class="categoria-adicional-foto-placeholder">Foto a confirmar</div>`;
 
     return `
-      <div class="categoria-adicional">
+      <div class="categoria-adicional" data-categoria="${categoria.categoria}">
         <div class="categoria-adicional-topo">
           <div class="categoria-adicional-info">
             <h2 class="categoria-adicional-nome">${categoria.categoria}</h2>
@@ -882,7 +945,7 @@
   function atualizarTotalAdicionais() {
     const elemento = document.getElementById("adicionais-total-barra");
     if (!elemento) return;
-    const total = estado.adicionaisSelecionados.reduce((soma, a) => soma + (a.valor || 0), 0);
+    const total = estado.adicionaisSelecionados.reduce((soma, a) => soma + (proposta.valorEfetivoAdicional(a) || 0), 0);
     const quantidade = estado.adicionaisSelecionados.length;
     const rotulo = quantidade === 1 ? "adicional selecionado" : "adicionais selecionados";
     elemento.innerHTML = `<span>${quantidade} ${rotulo}</span><strong>Total: ${calc.formatarMoeda(total)}</strong>`;
@@ -910,20 +973,36 @@
       if (!categoria || !nome) return;
 
       if (alvo.dataset.acao === "toggle-adicional") {
+        const linha = alvo.closest(".item-adicional");
+        const inputValorFinal = linha.querySelector('[data-acao="valor-final-adicional"]');
         if (alvo.checked) {
-          estado.adicionaisSelecionados.push({ categoria, nome, valor: Number(alvo.dataset.valor) || 0 });
+          if (!adicionalSelecionado(categoria, nome)) {
+            estado.adicionaisSelecionados.push({ categoria, nome, valorTotal: Number(alvo.dataset.valor) || 0, valorFinal: null });
+          }
+          if (inputValorFinal) inputValorFinal.disabled = false;
         } else {
           estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
             (a) => !(a.categoria === categoria && a.nome === nome)
           );
+          if (inputValorFinal) {
+            inputValorFinal.disabled = true;
+            inputValorFinal.value = "";
+          }
+          const infoDesconto = linha.querySelector(".item-adicional-desconto-info");
+          if (infoDesconto) infoDesconto.remove();
+          const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+          if (valorTotalSpan) valorTotalSpan.classList.remove("com-desconto");
         }
         persistir();
         atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
       } else if (alvo.dataset.acao === "toggle-adicional-manual") {
         const linha = alvo.closest(".item-adicional");
         const inputValor = linha.querySelector('[data-acao="valor-adicional-manual"]');
         if (alvo.checked) {
-          estado.adicionaisSelecionados.push({ categoria, nome, valor: 0 });
+          if (!adicionalSelecionado(categoria, nome)) {
+            estado.adicionaisSelecionados.push({ categoria, nome, valorTotal: 0, valorFinal: null });
+          }
           inputValor.disabled = false;
           inputValor.focus();
         } else {
@@ -935,17 +1014,41 @@
         }
         persistir();
         atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
       }
     });
 
     container.addEventListener("input", (evento) => {
       const alvo = evento.target;
-      if (alvo.dataset.acao !== "valor-adicional-manual") return;
-      const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
-      if (!item) return;
-      item.valor = parseFloat(alvo.value) || 0;
-      persistir();
-      atualizarTotalAdicionais();
+      if (alvo.dataset.acao === "valor-adicional-manual") {
+        const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
+        if (!item) return;
+        item.valorTotal = parseFloat(alvo.value) || 0;
+        persistir();
+        atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
+      } else if (alvo.dataset.acao === "valor-final-adicional") {
+        const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
+        if (!item) return;
+        item.valorFinal = alvo.value === "" ? null : parseFloat(alvo.value) || 0;
+        persistir();
+        atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
+        // Atualiza só a linha deste item, pra mostrar o "− Rx de desconto" sem perder o foco do campo.
+        const linha = alvo.closest(".item-adicional");
+        const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === alvo.dataset.categoria);
+        const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === alvo.dataset.nome);
+        if (linha && itemCfg) {
+          const temFoco = document.activeElement === alvo;
+          linha.outerHTML = htmlItemAdicional(alvo.dataset.categoria, itemCfg);
+          if (temFoco) {
+            const novoInput = container.querySelector(
+              `[data-acao="valor-final-adicional"][data-categoria="${alvo.dataset.categoria}"][data-nome="${CSS.escape(alvo.dataset.nome)}"]`
+            );
+            if (novoInput) novoInput.focus();
+          }
+        }
+      }
     });
   }
 
@@ -1012,7 +1115,7 @@
       ? dados.adicionais
           .map(
             (a) =>
-              `<div class="resumo-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valor)}</span></div>`
+              `<div class="resumo-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valorExibido)}</span></div>`
           )
           .join("")
       : `<p class="resumo-vazio" style="padding:0.6rem 0;">Nenhum adicional selecionado.</p>`;
@@ -1063,9 +1166,7 @@
 
       persistir();
       montarAbaResumo();
-      if (estadoApresentacao.abaAtiva === "resumo" && estadoApresentacao.modo === "espelho") {
-        enviarApresentacaoParaBemVindos();
-      }
+      atualizarTvSeNecessario();
     });
   }
 
@@ -1171,6 +1272,7 @@
     configurarAbas();
     configurarBotoesApresentacao();
     configurarFocoDePacote();
+    configurarFocoDeAdicional();
     configurarExportacaoPdf();
     configurarPropostasSalvas();
     if (estado.cabecalho.nomeCasal) state.salvarComoProposta(estado);

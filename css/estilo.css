@@ -765,6 +765,40 @@ main {
   text-align: right;
 }
 
+.item-adicional-valor.com-desconto {
+  color: var(--cor-texto-suave);
+  text-decoration: line-through;
+  font-size: 1rem;
+}
+
+.item-adicional-precos {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.item-adicional-valor-final-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--fonte-texto);
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.item-adicional-valor-final-campo input[type="number"] {
+  width: 6.5rem;
+  text-align: right;
+}
+
+.item-adicional-desconto-info {
+  color: var(--cor-sucesso);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
 .adicionais-total-barra {
   position: sticky;
   bottom: 1rem;

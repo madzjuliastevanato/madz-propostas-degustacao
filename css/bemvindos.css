@@ -373,6 +373,79 @@ body.modo-apresentacao .fundo-gradiente {
   color: var(--cor-dourado-forte);
 }
 
+/* ---------- Categoria de adicionais (galeria na TV) ---------- */
+
+.galeria-adicional-tv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(0.8rem, 1.6vh, 1.4rem);
+  width: 100%;
+  margin-bottom: clamp(1.2rem, 2.4vh, 2rem);
+}
+
+.galeria-adicional-principal-tv {
+  width: 100%;
+  max-width: 900px;
+  max-height: 46vh;
+  object-fit: cover;
+  border-radius: 14px;
+  filter: grayscale(0.15);
+}
+
+.galeria-adicional-miniaturas-tv {
+  display: flex;
+  gap: 0.8rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.galeria-adicional-miniatura-tv {
+  width: clamp(90px, 10vw, 150px);
+  height: clamp(64px, 7vw, 105px);
+  object-fit: cover;
+  border-radius: 8px;
+  opacity: 0.85;
+}
+
+.adicionais-rodape-tv {
+  display: flex;
+  gap: clamp(0.8rem, 1.6vw, 1.6rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+  border-top: 1px solid rgba(201, 163, 90, 0.3);
+  padding-top: clamp(0.8rem, 1.6vh, 1.2rem);
+}
+
+.adicionais-rodape-item-tv {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.5em 1.1em;
+  border-radius: 999px;
+  border: 1px solid transparent;
+}
+
+.adicionais-rodape-item-tv span:first-child {
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  color: var(--cor-texto-suave);
+}
+
+.adicionais-rodape-item-tv span:last-child {
+  font-family: var(--fonte-titulo);
+  font-weight: 600;
+  font-size: clamp(1rem, 1.5vw, 1.3rem);
+  color: var(--cor-dourado-forte);
+}
+
+.adicionais-rodape-item-tv.selecionado {
+  border-color: var(--cor-dourado);
+  background: rgba(201, 163, 90, 0.1);
+}
+
 .botao-tela-cheia {
   position: absolute;
   bottom: 1.2rem;
