@@ -124,6 +124,8 @@
           "assets/adicionais/welcome-drink-gelo-floral-2.jpg",
           "assets/adicionais/welcome-drink-gelo-floral-3.jpg",
           "assets/adicionais/welcome-drink-gelo-floral-4.jpg",
+          "assets/adicionais/welcome-drink-suqueira-1.jpg",
+          "assets/adicionais/welcome-drink-suqueira-2.jpg",
         ],
         itens: [
           { nome: "Suqueiras com 3 drinks", valorReferencia: 1500 },
@@ -145,7 +147,6 @@
         fotos: [
           "assets/adicionais/torre-de-tacas-1.jpg",
           "assets/adicionais/torre-de-tacas-2.jpg",
-          "assets/adicionais/torre-de-tacas-3.jpg",
           "assets/adicionais/torre-de-tacas-4.jpg",
         ],
         itens: [{ nome: "Torre de taças", valorReferencia: 800 }],
@@ -153,7 +154,12 @@
       {
         categoria: "Shots",
         explicacao: "Shots servidos em bandeja, circulando entre os convidados — uma forma descontraída de energizar a festa.",
-        fotos: ["assets/adicionais/shots-mini-beer-1.jpg", "assets/adicionais/shots-carajillo-1.jpg"],
+        fotos: [
+          "assets/adicionais/shots-mini-beer-1.jpg",
+          "assets/adicionais/shots-mini-beer-3.jpg",
+          "assets/adicionais/shots-mini-beer-4.jpg",
+          "assets/adicionais/shots-carajillo-1.jpg",
+        ],
         itens: [
           { nome: "Shots Mini Beer (50 shots)", valorReferencia: 500 },
           { nome: "Shots Carajillo (80 shots)", valorReferencia: 800 },
@@ -162,7 +168,7 @@
       {
         categoria: "Régua de Tequila",
         explicacao: "Uma régua de doses de tequila, servida em grupo, para brindar com os convidados mais próximos.",
-        fotos: [],
+        fotos: ["assets/adicionais/regua-de-tequila-1.jpg", "assets/adicionais/regua-de-tequila-2.jpg"],
         itens: [{ nome: "Régua de tequila (1 garrafa)", valorReferencia: 350 }],
       },
       {
@@ -176,7 +182,13 @@
       {
         categoria: "Views",
         explicacao: "Instalações pensadas para registrar e entreter — um ponto de interação que os convidados levam para casa.",
-        fotos: [],
+        fotos: [
+          "assets/adicionais/views-espelho-magico-1.jpg",
+          "assets/adicionais/views-espelho-magico-2.jpg",
+          "assets/adicionais/views-espelho-magico-3.jpg",
+          "assets/adicionais/views-totem-retro-1.jpg",
+          "assets/adicionais/views-polaroid-1.jpg",
+        ],
         itens: [
           { nome: "Espelho Mágico", valorReferencia: 2200 },
           { nome: "Totem Retrô", valorReferencia: 1890 },
