@@ -140,6 +140,11 @@ body.modo-apresentacao .fundo-gradiente {
   text-align: center;
 }
 
+.apresentacao-aguardando-coluna {
+  font-size: clamp(0.85rem, 1.2vw, 1.1rem);
+  margin-top: 1rem;
+}
+
 .apresentacao-cortesias {
   display: flex;
   flex-wrap: wrap;

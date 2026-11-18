@@ -138,7 +138,9 @@
         explicacao: "Um carrinho com rótulos de whisky à escolha do casal, para os convidados degustarem ao longo da festa.",
         fotos: [],
         itens: [
-          { nome: "Whiskeria (2 rótulos à escolha)", valorReferencia: 4000, observacao: "carrinho opcional +1.000" },
+          { nome: "Whiskeria + fornecimento de rótulos", valorReferencia: 4000 },
+          { nome: "Whiskeria: serviço de defumação", valorReferencia: 1000 },
+          { nome: "Carrinho (opcional)", valorReferencia: 1000 },
         ],
       },
       {
@@ -161,8 +163,8 @@
           "assets/adicionais/shots-carajillo-1.jpg",
         ],
         itens: [
-          { nome: "Shots Mini Beer (50 shots)", valorReferencia: 500 },
-          { nome: "Shots Carajillo (80 shots)", valorReferencia: 800 },
+          { nome: "Shots Mini Beer", valorReferencia: 500, quantidadePadrao: 50, unidadeQuantidade: "shots" },
+          { nome: "Shots Carajillo", valorReferencia: 800, quantidadePadrao: 80, unidadeQuantidade: "shots" },
         ],
       },
       {
@@ -176,7 +178,9 @@
         explicacao: "Um espaço de café e drinks quentes, montado junto ao bar, para fechar a noite.",
         fotos: [],
         itens: [
-          { nome: "Coffee bar (por convidado, junto com o bar)", valorReferencia: null, observacao: "R$ 40 / 42 / 45 por convidado" },
+          { nome: "Opção 1: 3 coffee shakes", valorReferencia: null, observacao: "R$ 40 por convidado" },
+          { nome: "Opção 2: 3 coffee shakes + frappuccinos e expressos", valorReferencia: null, observacao: "R$ 42 por convidado" },
+          { nome: "Opção 3: 3 coffee shakes + frappuccinos e expressos + alcoólicos", valorReferencia: null, observacao: "R$ 45 por convidado" },
         ],
       },
       {
@@ -193,13 +197,14 @@
           { nome: "Espelho Mágico", valorReferencia: 2200 },
           { nome: "Totem Retrô", valorReferencia: 1890 },
           { nome: "Polaroid + Guest Book", valorReferencia: 2190 },
+          { nome: "Guest Book", valorReferencia: 500 },
         ],
       },
       {
         categoria: "Mão de Obra Extra",
-        explicacao: "Reforço na equipe Black Tie para eventos maiores ou com demanda extra de atendimento.",
+        explicacao: "Reforço na equipe para eventos maiores ou com demanda extra de atendimento.",
         fotos: [],
-        itens: [{ nome: "Mão de obra extra (Black Tie)", valorReferencia: 350 }],
+        itens: [{ nome: "Mão de obra extra", valorReferencia: 350 }],
       },
       {
         categoria: "Upgrade de Bebida",
@@ -208,16 +213,10 @@
         itens: [{ nome: "Upgrade do Gin Seagers para Gordon's", valorReferencia: 1200 }],
       },
       {
-        categoria: "Estrutura de Bar",
-        explicacao: "Modelos de estrutura para o bar — reto, em U ou ilha — em diferentes acabamentos.",
+        categoria: "Papel de Arroz",
+        explicacao: "Papel de arroz para a saída do casal — um fechamento simples e tradicional da festa.",
         fotos: [],
-        itens: [
-          {
-            nome: "Estrutura de bar (reto, \"U\", ilha) — Boiserie verde/branco/azul, Ripado, Treliça",
-            valorReferencia: null,
-            observacao: "sem valor fixo",
-          },
-        ],
+        itens: [{ nome: "Papel de arroz", valorReferencia: 250 }],
       },
     ],
 

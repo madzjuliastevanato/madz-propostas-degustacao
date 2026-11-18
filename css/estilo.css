@@ -216,9 +216,7 @@ button.botao-discreto:hover {
 /* ---------- Navegação em abas ---------- */
 
 .abas-navegacao {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 1.2rem var(--espaco) 0;
+  margin: 0.9rem 0 -1rem;
   display: flex;
   gap: 0.5rem;
 }
@@ -476,6 +474,37 @@ main {
 .cortesias-total-interno {
   font-size: 0.72rem;
   color: var(--cor-texto-suave);
+}
+
+.cortesias-sugestoes-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cor-texto-suave);
+  margin: 1rem 0 0.5rem;
+}
+
+.cortesias-sugestoes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  max-height: 160px;
+  overflow-y: auto;
+  padding: 0.2rem;
+}
+
+.cortesia-sugestao-chip {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 0.35em 0.9em;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
+
+.cortesia-sugestao-chip:hover {
+  border-color: var(--cor-dourado);
+  color: var(--cor-dourado-forte);
 }
 
 /* ---------- Pagamento ---------- */
@@ -821,6 +850,20 @@ main {
   color: var(--cor-sucesso);
   font-size: 0.78rem;
   white-space: nowrap;
+}
+
+.item-adicional-quantidade-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--fonte-texto);
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.item-adicional-quantidade-campo input[type="number"] {
+  width: 4.5rem;
+  text-align: right;
 }
 
 .adicionais-total-barra {

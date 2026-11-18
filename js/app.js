@@ -260,6 +260,20 @@
     return chips;
   }
 
+  // Lista de referência (clicável) com todas as cortesias padronizadas do
+  // catálogo e o valor de cada uma, pra o vendedor escolher sem precisar digitar.
+  function htmlSugestoesCortesias(idPacote) {
+    return proposta
+      .itensAdicionaisPlano()
+      .map(
+        (item) =>
+          `<button type="button" class="cortesia-sugestao-chip" data-acao="sugestao-cortesia" data-pacote="${idPacote}" data-nome="${escaparHtml(item.nome)}">
+            ${escaparHtml(item.nome)}${item.valorReferencia != null ? ` · ${calc.formatarMoeda(item.valorReferencia)}` : ""}
+          </button>`
+      )
+      .join("");
+  }
+
   function htmlOpcoesPagamento(idPacote) {
     const configPacote = CONFIG.pacotes[idPacote];
     const estadoPacote = estado.pacotes[idPacote];
@@ -325,12 +339,16 @@
             Mostrar card "Sem álcool"
           </label>
           <label class="toggle-sem-alcool" style="margin:0;">
+            <input type="checkbox" data-acao="toggle-revelar-valores-pessoa" data-pacote="${idPacote}">
+            Revelar valores por pessoa
+          </label>
+          <label class="toggle-sem-alcool" style="margin:0;">
             <input type="checkbox" data-acao="toggle-revelar-cortesias" data-pacote="${idPacote}">
-            Revelar cortesias na TV
+            Revelar cortesias
           </label>
           <label class="toggle-sem-alcool" style="margin:0;">
             <input type="checkbox" data-acao="toggle-revelar-valores" data-pacote="${idPacote}">
-            Revelar valores na TV
+            Revelar formas de pagamento
           </label>
         </div>
       </div>
@@ -350,6 +368,8 @@
         <button type="button" data-acao="adicionar-cortesia" data-pacote="${idPacote}">+ adicionar</button>
       </div>
       <div class="cortesias-total-interno" data-out="total-cortesias" data-pacote="${idPacote}"></div>
+      <div class="cortesias-sugestoes-titulo">Opções padronizadas (clique para adicionar)</div>
+      <div class="cortesias-sugestoes">${htmlSugestoesCortesias(idPacote)}</div>
 
       <div class="secao-titulo">Formas de pagamento</div>
       <div class="pagamento-grid" data-pagamento-grid="${idPacote}">${htmlOpcoesPagamento(idPacote)}</div>
@@ -363,6 +383,8 @@
 
     document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-sem-alcool"]').checked =
       estado.pacotes[idPacote].ativoSemAlcool;
+    document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-revelar-valores-pessoa"]').checked =
+      estado.pacotes[idPacote].valoresPorPessoaRevelados;
     document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-revelar-cortesias"]').checked =
       estado.pacotes[idPacote].cortesiasReveladas;
     document.getElementById(`pacote-${idPacote}`).querySelector('[data-acao="toggle-revelar-valores"]').checked =
@@ -415,6 +437,12 @@
         persistir();
         atualizarVisibilidadeSemAlcool(idPacote);
         recalcularPacote(idPacote);
+      } else if (alvo.dataset.acao === "toggle-revelar-valores-pessoa") {
+        estado.pacotes[idPacote].valoresPorPessoaRevelados = alvo.checked;
+        persistir();
+        if (estadoApresentacao.modo === "espelho" && estadoApresentacao.pacoteEmFoco === idPacote) {
+          enviarApresentacaoParaBemVindos();
+        }
       } else if (alvo.dataset.acao === "toggle-revelar-cortesias") {
         estado.pacotes[idPacote].cortesiasReveladas = alvo.checked;
         persistir();
@@ -435,6 +463,8 @@
       if (alvo.dataset.acao === "adicionar-cortesia") {
         const input = container.querySelector(`[data-acao="texto-cortesia"][data-pacote="${idPacote}"]`);
         adicionarCortesia(idPacote, input);
+      } else if (alvo.dataset.acao === "sugestao-cortesia") {
+        adicionarCortesiaPorNome(idPacote, alvo.dataset.nome);
       } else if (alvo.dataset.acao === "remover-cortesia") {
         estado.pacotes[idPacote].cortesias.splice(Number(alvo.dataset.indice), 1);
         persistir();
@@ -444,14 +474,18 @@
   }
 
   function adicionarCortesia(idPacote, input) {
-    const nome = input.value.trim();
+    adicionarCortesiaPorNome(idPacote, input.value);
+    input.value = "";
+  }
+
+  function adicionarCortesiaPorNome(idPacote, nomeDigitado) {
+    const nome = nomeDigitado.trim();
     if (!nome) return;
     const doCatalogo = proposta.itensAdicionaisPlano().find((a) => a.nome.toLowerCase() === nome.toLowerCase());
     estado.pacotes[idPacote].cortesias.push({
       nome: doCatalogo ? doCatalogo.nome : nome,
       valorReferencia: doCatalogo ? doCatalogo.valorReferencia : null,
     });
-    input.value = "";
     persistir();
     renderizarCortesias(idPacote);
   }
@@ -575,6 +609,38 @@
   // da TV por conta própria (ver configurarAbas).
   let atualizarFocoPacote = function () {};
 
+  // Escolhe, entre as seções visíveis, aquela por onde passa uma "linha de foco"
+  // a 40% do topo da janela — não a que ocupa mais pixels da tela. Ocupar mais
+  // pixels favorece sempre as seções mais altas, então uma seção curta (ex.:
+  // Torre de Taças, com só 1 item) nunca ganhava e ficava pulada na TV.
+  // Usa só a parte visível (recortada pela janela) de cada seção: usar o centro
+  // da seção inteira (sem recorte) faz uma seção alta quase toda rolada para
+  // fora da tela "ganhar" por coincidência matemática, mesmo com só uma tira
+  // visível, roubando o foco de quem está de fato na linha.
+  function encontrarSecaoEmFoco(secoes) {
+    const alturaJanela = window.innerHeight;
+    const linhaFoco = alturaJanela * 0.4;
+    let secaoNaLinha = null;
+    let melhorSecao = null;
+    let menorDistancia = Infinity;
+    secoes.forEach((secao) => {
+      const r = secao.getBoundingClientRect();
+      const topoVisivel = Math.max(r.top, 0);
+      const baseVisivel = Math.min(r.bottom, alturaJanela);
+      if (baseVisivel <= topoVisivel) return;
+      if (linhaFoco >= topoVisivel && linhaFoco <= baseVisivel) {
+        secaoNaLinha = secao;
+      }
+      const distancia =
+        linhaFoco < topoVisivel ? topoVisivel - linhaFoco : linhaFoco > baseVisivel ? linhaFoco - baseVisivel : 0;
+      if (distancia < menorDistancia) {
+        menorDistancia = distancia;
+        melhorSecao = secao;
+      }
+    });
+    return secaoNaLinha || melhorSecao;
+  }
+
   function configurarFocoDePacote() {
     const secaoResumo = document.getElementById("secao-drinks-caipirinhas");
     const secoes = [
@@ -585,17 +651,7 @@
 
     function atualizarFoco() {
       if (estadoApresentacao.abaAtiva !== "pacotes") return;
-      const alturaJanela = window.innerHeight;
-      let melhorSecao = null;
-      let melhorSobreposicao = 0;
-      secoes.forEach((secao) => {
-        const r = secao.getBoundingClientRect();
-        const sobreposicao = Math.min(r.bottom, alturaJanela) - Math.max(r.top, 0);
-        if (sobreposicao > melhorSobreposicao) {
-          melhorSobreposicao = sobreposicao;
-          melhorSecao = secao;
-        }
-      });
+      const melhorSecao = encontrarSecaoEmFoco(secoes);
       if (!melhorSecao) return;
       const idFoco = melhorSecao === secaoResumo ? "resumo" : melhorSecao.id.replace("pacote-", "");
       if (idFoco !== estadoApresentacao.pacoteEmFoco) {
@@ -627,17 +683,7 @@
       if (estadoApresentacao.abaAtiva !== "adicionais") return;
       const secoes = Array.from(document.querySelectorAll("#aba-adicionais .categoria-adicional"));
       if (!secoes.length) return;
-      const alturaJanela = window.innerHeight;
-      let melhorSecao = null;
-      let melhorSobreposicao = 0;
-      secoes.forEach((secao) => {
-        const r = secao.getBoundingClientRect();
-        const sobreposicao = Math.min(r.bottom, alturaJanela) - Math.max(r.top, 0);
-        if (sobreposicao > melhorSobreposicao) {
-          melhorSobreposicao = sobreposicao;
-          melhorSecao = secao;
-        }
-      });
+      const melhorSecao = encontrarSecaoEmFoco(secoes);
       if (!melhorSecao) return;
       const idFoco = "adicional:" + melhorSecao.dataset.categoria;
       if (idFoco !== estadoApresentacao.pacoteEmFoco) {
@@ -907,6 +953,17 @@
 
     const temDesconto = selecionado && selecionado.valorFinal != null && selecionado.valorFinal !== item.valorReferencia;
     const desconto = temDesconto ? item.valorReferencia - selecionado.valorFinal : 0;
+    const campoQuantidade =
+      item.quantidadePadrao != null
+        ? `
+          <span class="item-adicional-quantidade-campo">
+            <input type="number" min="0" step="1" data-acao="quantidade-adicional"
+              data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}"
+              value="${selecionado && selecionado.quantidade != null ? selecionado.quantidade : item.quantidadePadrao}"
+              ${selecionado ? "" : "disabled"}>
+            ${escaparHtml(item.unidadeQuantidade || "")}
+          </span>`
+        : "";
 
     return `
       <div class="item-adicional" data-chave="${chave}">
@@ -916,6 +973,7 @@
         </label>
         <div class="item-adicional-precos">
           <span class="item-adicional-valor${temDesconto ? " com-desconto" : ""}">${calc.formatarMoeda(item.valorReferencia)}</span>
+          ${campoQuantidade}
           <span class="item-adicional-valor-final-campo">
             R$ <input type="number" min="0" step="1" placeholder="valor final" data-acao="valor-final-adicional"
               data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}"
@@ -1001,11 +1059,17 @@
       if (alvo.dataset.acao === "toggle-adicional") {
         const linha = alvo.closest(".item-adicional");
         const inputValorFinal = linha.querySelector('[data-acao="valor-final-adicional"]');
+        const inputQuantidade = linha.querySelector('[data-acao="quantidade-adicional"]');
         if (alvo.checked) {
           if (!adicionalSelecionado(categoria, nome)) {
-            estado.adicionaisSelecionados.push({ categoria, nome, valorTotal: Number(alvo.dataset.valor) || 0, valorFinal: null });
+            const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === categoria);
+            const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === nome);
+            let quantidade = itemCfg && itemCfg.quantidadePadrao != null ? itemCfg.quantidadePadrao : null;
+            if (inputQuantidade && inputQuantidade.value !== "") quantidade = parseFloat(inputQuantidade.value) || 0;
+            estado.adicionaisSelecionados.push({ categoria, nome, valorTotal: Number(alvo.dataset.valor) || 0, valorFinal: null, quantidade });
           }
           if (inputValorFinal) inputValorFinal.disabled = false;
+          if (inputQuantidade) inputQuantidade.disabled = false;
         } else {
           estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
             (a) => !(a.categoria === categoria && a.nome === nome)
@@ -1014,6 +1078,7 @@
             inputValorFinal.disabled = true;
             inputValorFinal.value = "";
           }
+          if (inputQuantidade) inputQuantidade.disabled = true;
           const infoDesconto = linha.querySelector(".item-adicional-desconto-info");
           if (infoDesconto) infoDesconto.remove();
           const valorTotalSpan = linha.querySelector(".item-adicional-valor");
@@ -1046,7 +1111,13 @@
 
     container.addEventListener("input", (evento) => {
       const alvo = evento.target;
-      if (alvo.dataset.acao === "valor-adicional-manual") {
+      if (alvo.dataset.acao === "quantidade-adicional") {
+        const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
+        if (!item) return;
+        item.quantidade = alvo.value === "" ? null : parseFloat(alvo.value) || 0;
+        persistir();
+        atualizarTvSeNecessario();
+      } else if (alvo.dataset.acao === "valor-adicional-manual") {
         const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
         if (!item) return;
         item.valorTotal = parseFloat(alvo.value) || 0;

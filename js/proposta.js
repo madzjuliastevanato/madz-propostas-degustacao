@@ -109,6 +109,7 @@
       inclui: configPacote.inclui,
       tipos,
       cortesias: estadoPacote.cortesias,
+      valoresPorPessoaRevelados: Boolean(estadoPacote.valoresPorPessoaRevelados),
       cortesiasReveladas: Boolean(estadoPacote.cortesiasReveladas),
       valoresRevelados: Boolean(estadoPacote.valoresRevelados),
       linhas,
@@ -129,6 +130,18 @@
     return adicional.valorFinal != null ? adicional.valorFinal : adicional.valorTotal;
   }
 
+  // Nome exibido de um adicional selecionado: quando o item tem uma quantidade
+  // editável (ex.: Shots), acrescenta "(N shots)" ao nome, usando a quantidade
+  // escolhida pelo vendedor.
+  function nomeExibidoAdicional(nomeCategoria, nomeItem, quantidade) {
+    const categoria = CONFIG.catalogoAdicionais.find((c) => c.categoria === nomeCategoria);
+    const itemCfg = categoria && categoria.itens.find((i) => i.nome === nomeItem);
+    if (itemCfg && itemCfg.unidadeQuantidade && quantidade != null) {
+      return `${nomeItem} (${quantidade} ${itemCfg.unidadeQuantidade})`;
+    }
+    return nomeItem;
+  }
+
   // Resumo da compra: pacote + bebida + forma de pagamento escolhidos na aba
   // "Resumo", somados aos adicionais marcados na vitrine. Retorna null enquanto
   // a escolha não estiver completa.
@@ -141,7 +154,11 @@
     if (!opcao) return null;
     const tipoInfo = TIPOS_BEBIDA.find((t) => t.id === r.tipoBebidaEscolhido);
     const resultado = calcularOpcaoParaTipo(estado, r.pacoteEscolhido, r.tipoBebidaEscolhido, opcao);
-    const adicionais = estado.adicionaisSelecionados.map((a) => ({ ...a, valorExibido: valorEfetivoAdicional(a) }));
+    const adicionais = estado.adicionaisSelecionados.map((a) => ({
+      ...a,
+      nome: nomeExibidoAdicional(a.categoria, a.nome, a.quantidade),
+      valorExibido: valorEfetivoAdicional(a),
+    }));
     const totalAdicionais = adicionais.reduce((soma, a) => soma + (a.valorExibido || 0), 0);
 
     return {
@@ -176,7 +193,10 @@
         (a) => a.categoria === nomeCategoria && a.nome === item.nome
       );
       const valorExibido = selecionado ? valorEfetivoAdicional(selecionado) : item.valorReferencia;
-      return { nome: item.nome, valorExibido, selecionado: Boolean(selecionado) };
+      const nome = selecionado
+        ? nomeExibidoAdicional(nomeCategoria, item.nome, selecionado.quantidade)
+        : item.nome;
+      return { nome, valorExibido, selecionado: Boolean(selecionado) };
     });
     const indicePrincipal = indiceFotoPrincipal(estado, nomeCategoria, categoria.fotos.length);
     const fotos = categoria.fotos.map((src, indice) => ({ src, principal: indice === indicePrincipal }));
@@ -194,6 +214,7 @@
     dadosPacote,
     itensAdicionaisPlano,
     valorEfetivoAdicional,
+    nomeExibidoAdicional,
     dadosResumoCompra,
     dadosCategoriaAdicional,
     indiceFotoPrincipal,

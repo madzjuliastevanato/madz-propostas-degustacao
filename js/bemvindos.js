@@ -57,26 +57,31 @@
         : "";
 
     let blocoValores;
-    if (dados.valoresRevelados) {
+    if (dados.valoresPorPessoaRevelados) {
       const colunas = dados.tipos
         .map((tipo) => {
           const valorAjustado = dados.linhas[0].porTipo[tipo.id].valorAjustado;
-          const linhas = dados.linhas
-            .map((linha) => {
-              const resultado = linha.porTipo[tipo.id];
-              const detalhe = `<span class="detalhe-tv">${resultado.aviso || resultado.detalhe}</span>`;
-              const total = resultado.aviso ? "" : `<span class="total-tv">${calc.formatarMoeda(resultado.totalComDesconto)}</span>`;
-              return `
-                <div class="linha-opcao-tv">
-                  <div class="linha-opcao-tv-topo">
-                    <span class="nome-opcao-tv">${linha.opcao.nome}</span>
-                    ${total}
-                  </div>
-                  ${detalhe}
-                </div>`;
-            })
-            .join("");
           const marcas = CONFIG.rotulosBebidas[tipo.id];
+          let linhas;
+          if (dados.valoresRevelados) {
+            linhas = dados.linhas
+              .map((linha) => {
+                const resultado = linha.porTipo[tipo.id];
+                const detalhe = `<span class="detalhe-tv">${resultado.aviso || resultado.detalhe}</span>`;
+                const total = resultado.aviso ? "" : `<span class="total-tv">${calc.formatarMoeda(resultado.totalComDesconto)}</span>`;
+                return `
+                  <div class="linha-opcao-tv">
+                    <div class="linha-opcao-tv-topo">
+                      <span class="nome-opcao-tv">${linha.opcao.nome}</span>
+                      ${total}
+                    </div>
+                    ${detalhe}
+                  </div>`;
+              })
+              .join("");
+          } else {
+            linhas = `<p class="apresentacao-aguardando apresentacao-aguardando-coluna">Formas de pagamento</p>`;
+          }
           return `
             <div class="coluna-tipo-tv">
               <div class="coluna-tipo-tv-cabecalho">
@@ -90,7 +95,7 @@
         .join('<div class="divisor-coluna-tv"></div>');
       blocoValores = `<div class="colunas-pagamento-tv">${colunas}</div>`;
     } else {
-      blocoValores = `<p class="apresentacao-aguardando">Valores e formas de pagamento</p>`;
+      blocoValores = `<p class="apresentacao-aguardando">Valores por pessoa</p>`;
     }
 
     vistaApresentacao.innerHTML = `

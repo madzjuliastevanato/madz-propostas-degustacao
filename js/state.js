@@ -55,6 +55,10 @@
       percentualHoraExtra: CONFIG.horas.percentualPorHoraExtraPadrao,
       descontos,
       numeroParcelasBoletoManual: null,
+      // Estágios da apresentação na TV, cada um revelado na hora pelo vendedor:
+      // valores por pessoa primeiro, depois cortesias, depois formas de pagamento
+      // (que só aparece se "valoresPorPessoaRevelados" também estiver ligado).
+      valoresPorPessoaRevelados: false,
       cortesiasReveladas: false,
       valoresRevelados: false,
       cortesias: [],
