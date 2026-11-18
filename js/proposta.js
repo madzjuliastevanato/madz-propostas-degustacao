@@ -218,6 +218,25 @@
     return { categoria: categoria.categoria, explicacao: categoria.explicacao, fotos: fotosOrdenadas, itens };
   }
 
+  // Conteúdo de uma categoria do portfólio de estruturas de bar (fotos +
+  // formatos de montagem) para a TV espelhada, enquanto a aba "Portfólio" está
+  // em foco. Pura vitrine, sem preço nem seleção — mesma lógica de foto em
+  // destaque da aba Adicionais (compartilha fotoPrincipalAdicionais por nome
+  // de categoria).
+  function dadosCategoriaPortfolio(estado, nomeCategoria) {
+    const categoria = CONFIG.catalogoPortfolio.find((c) => c.categoria === nomeCategoria);
+    if (!categoria) return null;
+    const indicePrincipal = indiceFotoPrincipal(estado, nomeCategoria, categoria.fotos.length);
+    const fotos = categoria.fotos.map((src, indice) => ({ src, principal: indice === indicePrincipal }));
+    const fotosOrdenadas = [...fotos].sort((a, b) => (a.principal === b.principal ? 0 : a.principal ? -1 : 1)).map((f) => f.src);
+    return {
+      categoria: categoria.categoria,
+      explicacao: categoria.explicacao,
+      layouts: categoria.layouts,
+      fotos: fotosOrdenadas,
+    };
+  }
+
   return {
     TIPOS_BEBIDA,
     tiposAtivos,
@@ -231,6 +250,7 @@
     nomeExibidoAdicional,
     dadosResumoCompra,
     dadosCategoriaAdicional,
+    dadosCategoriaPortfolio,
     indiceFotoPrincipal,
   };
 });

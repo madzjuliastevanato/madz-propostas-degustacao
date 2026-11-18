@@ -907,6 +907,31 @@ main {
   color: var(--cor-dourado-forte);
 }
 
+/* ---------- Aba Portfólio ---------- */
+
+.portfolio-layouts-titulo {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--cor-texto-suave);
+  margin: 1rem 0 0.5rem;
+}
+
+.portfolio-layouts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.portfolio-layout-chip {
+  background: var(--cor-fundo-card);
+  border: 1px solid var(--cor-borda);
+  border-radius: 999px;
+  padding: 0.35em 0.9em;
+  font-size: 0.8rem;
+  color: var(--cor-texto-suave);
+}
+
 /* ---------- Aba Resumo ---------- */
 
 .resumo-cabecalho {

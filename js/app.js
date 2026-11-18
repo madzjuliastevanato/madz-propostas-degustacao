@@ -32,10 +32,10 @@
   const estadoApresentacao = { modo: "bemvindos", pacoteEmFoco: "resumo", abaAtiva: "pacotes" };
 
   // Reenvia para a TV quando a aba atual é uma das que ela espelha ao vivo
-  // (Adicionais e Resumo acompanham cada marcação/edição; Pacotes é via scroll).
+  // (Adicionais, Portfólio e Resumo acompanham cada marcação/edição; Pacotes é via scroll).
   function atualizarTvSeNecessario() {
     if (estadoApresentacao.modo !== "espelho") return;
-    if (estadoApresentacao.abaAtiva === "adicionais" || estadoApresentacao.abaAtiva === "resumo") {
+    if (["adicionais", "portfolio", "resumo"].includes(estadoApresentacao.abaAtiva)) {
       enviarApresentacaoParaBemVindos();
     }
   }
@@ -725,8 +725,38 @@
     });
   }
 
+  // Mesma lógica, mas para as categorias dentro da aba "Portfólio".
+  let atualizarFocoPortfolio = function () {};
+
+  function configurarFocoDePortfolio() {
+    function atualizarFoco() {
+      if (estadoApresentacao.abaAtiva !== "portfolio") return;
+      const secoes = Array.from(document.querySelectorAll("#aba-portfolio .categoria-adicional"));
+      if (!secoes.length) return;
+      const melhorSecao = encontrarSecaoEmFoco(secoes);
+      if (!melhorSecao) return;
+      const idFoco = "portfolio:" + melhorSecao.dataset.categoria;
+      if (idFoco !== estadoApresentacao.pacoteEmFoco) {
+        estadoApresentacao.pacoteEmFoco = idFoco;
+        if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
+      }
+    }
+
+    atualizarFocoPortfolio = atualizarFoco;
+
+    let agendado = false;
+    window.addEventListener("scroll", () => {
+      if (agendado) return;
+      agendado = true;
+      requestAnimationFrame(() => {
+        agendado = false;
+        atualizarFoco();
+      });
+    });
+  }
+
   // ---------------------------------------------------------------------
-  // Navegação em abas (Pacotes / Adicionais / Resumo)
+  // Navegação em abas (Pacotes / Adicionais / Portfólio / Resumo)
   // ---------------------------------------------------------------------
 
   function configurarAbas() {
@@ -744,6 +774,8 @@
           atualizarFocoPacote();
         } else if (aba === "adicionais") {
           atualizarFocoAdicional();
+        } else if (aba === "portfolio") {
+          atualizarFocoPortfolio();
         } else if (aba === "resumo") {
           // Reconstrói com os dados mais recentes: o casal pode ter marcado
           // adicionais na vitrine desde a última vez que esta aba foi montada.
@@ -1292,6 +1324,73 @@
   }
 
   // ---------------------------------------------------------------------
+  // Aba "Portfólio" (estruturas de bar)
+  // ---------------------------------------------------------------------
+  // Pura vitrine de fotos para o vendedor apresentar ao casal — sem preço nem
+  // seleção, ao contrário da aba Adicionais. Compartilha o mesmo mecanismo de
+  // "foto em destaque" (clique para escolher a que aparece grande na TV).
+
+  function htmlCategoriaPortfolio(categoria) {
+    const indicePrincipal = proposta.indiceFotoPrincipal(estado, categoria.categoria, categoria.fotos.length);
+    const fotosHtml = categoria.fotos.length
+      ? categoria.fotos
+          .map(
+            (src, indice) => `
+              <button type="button" class="categoria-adicional-foto-botao${indice === indicePrincipal ? " selecionada" : ""}"
+                data-acao="selecionar-foto-principal" data-categoria="${categoria.categoria}" data-indice="${indice}"
+                title="Mostrar esta foto em destaque na tela espelhada">
+                <img class="categoria-adicional-foto" src="${src}" alt="${categoria.categoria}">
+              </button>`
+          )
+          .join("")
+      : `<div class="categoria-adicional-foto-placeholder">Foto a confirmar</div><div class="categoria-adicional-foto-placeholder">Foto a confirmar</div>`;
+
+    const layoutsHtml = categoria.layouts
+      .map((layout) => `<span class="portfolio-layout-chip">${escaparHtml(layout)}</span>`)
+      .join("");
+
+    return `
+      <div class="categoria-adicional" data-categoria="${categoria.categoria}">
+        <div class="categoria-adicional-topo">
+          <div class="categoria-adicional-info">
+            <h2 class="categoria-adicional-nome">${categoria.categoria}</h2>
+            <p class="categoria-adicional-explicacao">${categoria.explicacao}</p>
+            <div class="portfolio-layouts-titulo">Layouts de montagem</div>
+            <div class="portfolio-layouts">${layoutsHtml}</div>
+          </div>
+          <div class="categoria-adicional-fotos">${fotosHtml}</div>
+        </div>
+      </div>`;
+  }
+
+  function montarAbaPortfolio() {
+    const container = document.getElementById("aba-portfolio");
+    container.innerHTML = `
+      <div class="adicionais-cabecalho">
+        <h1 class="pacote-titulo" style="font-size:1.8rem;">Portfólio</h1>
+        <p>Nossas estruturas de bar — mostre ao casal para ajudar na escolha do visual do evento.</p>
+      </div>
+      ${CONFIG.catalogoPortfolio.map(htmlCategoriaPortfolio).join("")}
+    `;
+
+    if (container.dataset.eventosLigados) return;
+    container.dataset.eventosLigados = "1";
+
+    container.addEventListener("click", (evento) => {
+      const botao = evento.target.closest('[data-acao="selecionar-foto-principal"]');
+      if (!botao) return;
+      const categoria = botao.dataset.categoria;
+      const indice = Number(botao.dataset.indice);
+      estado.fotoPrincipalAdicionais[categoria] = indice;
+      persistir();
+      botao.parentElement.querySelectorAll(".categoria-adicional-foto-botao").forEach((b) => {
+        b.classList.toggle("selecionada", b === botao);
+      });
+      atualizarTvSeNecessario();
+    });
+  }
+
+  // ---------------------------------------------------------------------
   // Aba "Resumo" (resumo da compra)
   // ---------------------------------------------------------------------
 
@@ -1419,6 +1518,7 @@
     montarSecaoCompartilhada();
     Object.keys(CONFIG.pacotes).forEach(montarBlocoPacote);
     montarAbaAdicionais();
+    montarAbaPortfolio();
     montarAbaResumo();
     enviarApresentacaoParaBemVindos();
   }
@@ -1507,11 +1607,13 @@
     montarSecaoCompartilhada();
     Object.keys(CONFIG.pacotes).forEach(montarBlocoPacote);
     montarAbaAdicionais();
+    montarAbaPortfolio();
     montarAbaResumo();
     configurarAbas();
     configurarBotoesApresentacao();
     configurarFocoDePacote();
     configurarFocoDeAdicional();
+    configurarFocoDePortfolio();
     configurarExportacaoPdf();
     configurarPropostasSalvas();
     if (estado.cabecalho.nomeCasal) state.salvarComoProposta(estado);

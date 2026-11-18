@@ -220,6 +220,55 @@
       },
     ],
 
+    // Portfólio de estruturas de bar — vitrine de fotos para o vendedor mostrar
+    // ao casal (sem preço: estrutura de bar não tem valor fixo). "layouts" são os
+    // formatos de montagem possíveis dessa estrutura (reto, "U", ilha).
+    catalogoPortfolio: [
+      {
+        categoria: "Ripado",
+        explicacao: "Estrutura em ripas de madeira com acabamento amadeirado — um visual quente e natural para o bar.",
+        layouts: ["Formato reto", "Formato \"U\"", "Formato Ilha"],
+        fotos: ["assets/portfolio/ripado-1.jpg"],
+      },
+      {
+        categoria: "Boiserie Verde",
+        explicacao: "Estrutura com painéis em boiserie na cor verde — um acabamento clássico e elegante.",
+        layouts: ["Formato reto", "Formato \"U\"", "Formato Ilha"],
+        fotos: [
+          "assets/portfolio/boiserie-verde-1.jpg",
+          "assets/portfolio/boiserie-verde-2.jpg",
+          "assets/portfolio/boiserie-verde-3.jpg",
+          "assets/portfolio/boiserie-verde-4.jpg",
+          "assets/portfolio/boiserie-verde-5.jpg",
+        ],
+      },
+      {
+        categoria: "Boiserie Branco",
+        explicacao: "Estrutura com painéis em boiserie na cor branca — combina com qualquer paleta de decoração.",
+        layouts: ["Formato reto", "Formato \"U\"", "Formato Ilha"],
+        fotos: [
+          "assets/portfolio/boiserie-branco-1.jpg",
+          "assets/portfolio/boiserie-branco-2.jpg",
+          "assets/portfolio/boiserie-branco-3.jpg",
+        ],
+      },
+      {
+        categoria: "Boiserie Azul",
+        explicacao: "Estrutura com painéis em boiserie na cor azul — um toque de cor sofisticado para o bar.",
+        layouts: ["Formato reto"],
+        fotos: ["assets/portfolio/boiserie-azul-1.jpg"],
+      },
+      {
+        categoria: "Treliça Espelhado",
+        explicacao: "Estrutura em treliça de madeira com fundo espelhado — um efeito marcante de luz e reflexo.",
+        layouts: ["Formato reto", "Formato \"U\"", "Formato Ilha"],
+        fotos: [
+          "assets/portfolio/trelica-espelhado-1.jpg",
+          "assets/portfolio/trelica-espelhado-2.jpg",
+        ],
+      },
+    ],
+
     // Carta de Coquetéis 2027. Todos podem ser feitos alcoólicos ou não alcoólicos, exceto os mocktails.
     catalogoDrinks: [
       { destilado: "Gin", itens: [

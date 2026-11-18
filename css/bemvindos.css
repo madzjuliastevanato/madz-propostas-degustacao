@@ -465,6 +465,23 @@ body.modo-apresentacao .fundo-gradiente {
   background: rgba(201, 163, 90, 0.1);
 }
 
+.portfolio-layouts-tv {
+  display: flex;
+  gap: clamp(0.6rem, 1.2vw, 1rem);
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 1100px;
+}
+
+.portfolio-layout-chip-tv {
+  font-size: clamp(0.85rem, 1.2vw, 1.05rem);
+  color: var(--cor-texto-suave);
+  border: 1px solid rgba(201, 163, 90, 0.35);
+  border-radius: 999px;
+  padding: 0.4em 1.1em;
+}
+
 .botao-tela-cheia {
   position: absolute;
   bottom: 1.2rem;

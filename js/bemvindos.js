@@ -159,6 +159,38 @@
     `;
   }
 
+  function renderizarCategoriaPortfolio(estado, nomeCategoria) {
+    const dados = proposta.dadosCategoriaPortfolio(estado, nomeCategoria);
+    if (!dados) return;
+
+    const fotos = dados.fotos || [];
+    let galeriaHtml;
+    if (!fotos.length) {
+      galeriaHtml = `<p class="apresentacao-vazio">Fotos a confirmar</p>`;
+    } else {
+      const [principal, ...demais] = fotos;
+      const miniaturasHtml = demais.length
+        ? `<div class="galeria-adicional-miniaturas-tv">${demais
+            .map((src) => `<img class="galeria-adicional-miniatura-tv" src="${src}" alt="${escaparHtml(nomeCategoria)}">`)
+            .join("")}</div>`
+        : "";
+      galeriaHtml = `
+        <img class="galeria-adicional-principal-tv" src="${principal}" alt="${escaparHtml(nomeCategoria)}">
+        ${miniaturasHtml}`;
+    }
+
+    const layoutsHtml = dados.layouts.map((l) => `<span class="portfolio-layout-chip-tv">${escaparHtml(l)}</span>`).join("");
+
+    vistaApresentacao.innerHTML = `
+      <div class="apresentacao-cabecalho">
+        <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
+        <h2 class="apresentacao-pacote-nome">${escaparHtml(dados.categoria)}</h2>
+      </div>
+      <div class="galeria-adicional-tv">${galeriaHtml}</div>
+      <div class="portfolio-layouts-tv">${layoutsHtml}</div>
+    `;
+  }
+
   function renderizarResumoCompra(estado) {
     const dados = proposta.dadosResumoCompra(estado);
 
@@ -219,6 +251,8 @@
         renderizarResumoCompra(dados.estado);
       } else if (typeof dados.pacoteAtivo === "string" && dados.pacoteAtivo.startsWith("adicional:")) {
         renderizarCategoriaAdicional(dados.estado, dados.pacoteAtivo.slice("adicional:".length));
+      } else if (typeof dados.pacoteAtivo === "string" && dados.pacoteAtivo.startsWith("portfolio:")) {
+        renderizarCategoriaPortfolio(dados.estado, dados.pacoteAtivo.slice("portfolio:".length));
       } else if (dados.pacoteAtivo === "resumo" || !CONFIG.pacotes[dados.pacoteAtivo]) {
         renderizarResumo(dados.estado);
       } else {
