@@ -1,7 +1,9 @@
 .DS_Store
 Thumbs.db
 
-# Fotos originais em RAW (grandes, não usáveis direto na web) — as versões
-# .jpg convertidas em assets/adicionais/ é que entram no site.
+# Fotos originais em RAW/HEIC (grandes, não usáveis direto na web) — as versões
+# .jpg convertidas em assets/ é que entram no site.
 *.DNG
 *.dng
+*.HEIC
+*.heic

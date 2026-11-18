@@ -228,7 +228,13 @@
         categoria: "Ripado",
         explicacao: "Estrutura em ripas de madeira com acabamento amadeirado — um visual quente e natural para o bar.",
         layouts: ["Formato reto", "Formato \"U\"", "Formato Ilha"],
-        fotos: ["assets/portfolio/ripado-1.jpg"],
+        fotos: [
+          "assets/portfolio/ripado-1.jpg",
+          "assets/portfolio/ripado-2.jpg",
+          "assets/portfolio/ripado-3.jpg",
+          "assets/portfolio/ripado-4.jpg",
+          "assets/portfolio/ripado-5.jpg",
+        ],
       },
       {
         categoria: "Boiserie Verde",
@@ -250,6 +256,9 @@
           "assets/portfolio/boiserie-branco-1.jpg",
           "assets/portfolio/boiserie-branco-2.jpg",
           "assets/portfolio/boiserie-branco-3.jpg",
+          "assets/portfolio/boiserie-branco-4.jpg",
+          "assets/portfolio/boiserie-branco-5.jpg",
+          "assets/portfolio/boiserie-branco-6.jpg",
         ],
       },
       {
