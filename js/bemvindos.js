@@ -198,7 +198,7 @@
       vistaApresentacao.innerHTML = `
         <div class="apresentacao-cabecalho">
           <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
-          <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+          <h2 class="apresentacao-pacote-nome">Resumo</h2>
         </div>
         <p class="apresentacao-aguardando">Aguardando a escolha do pacote e da forma de pagamento</p>
       `;
@@ -209,7 +209,7 @@
       vistaApresentacao.innerHTML = `
         <div class="apresentacao-cabecalho">
           <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
-          <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+          <h2 class="apresentacao-pacote-nome">Resumo</h2>
         </div>
         <p class="apresentacao-aguardando">${dados.avisoPacote}</p>
       `;
@@ -228,7 +228,7 @@
     vistaApresentacao.innerHTML = `
       <div class="apresentacao-cabecalho">
         <span class="apresentacao-casal">${escaparHtml(estado.cabecalho.nomeCasal || "")}</span>
-        <h2 class="apresentacao-pacote-nome">Resumo da compra</h2>
+        <h2 class="apresentacao-pacote-nome">Resumo</h2>
       </div>
       <div class="resumo-compra-linha-pacote-tv">
         <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
