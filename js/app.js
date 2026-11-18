@@ -1145,15 +1145,20 @@
         const inputTaxa = linha.querySelector('[data-acao="taxa-porconvidado-adicional"]');
         const inputValorFinal = linha.querySelector('[data-acao="valor-final-adicional"]');
         if (alvo.checked) {
-          if (!adicionalSelecionado(categoria, nome)) {
+          let item = adicionalSelecionado(categoria, nome);
+          if (!item) {
             const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === categoria);
             const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === nome);
             const taxa = inputTaxa && inputTaxa.value !== "" ? parseFloat(inputTaxa.value) || 0 : itemCfg ? itemCfg.valorPorConvidado : 0;
             const valorTotal = taxa * (estado.cabecalho.convidados || 0);
-            estado.adicionaisSelecionados.push({ categoria, nome, valorPorConvidado: taxa, valorTotal, valorFinal: null });
+            item = { categoria, nome, valorPorConvidado: taxa, valorTotal, valorFinal: null };
+            estado.adicionaisSelecionados.push(item);
           }
           if (inputTaxa) inputTaxa.disabled = false;
           if (inputValorFinal) inputValorFinal.disabled = false;
+          // O preço cheio exibido pode ter ficado desatualizado se o número de
+          // convidados mudou enquanto o item estava desmarcado — atualiza agora.
+          atualizarExibicaoValorCheio(linha, item);
         } else {
           estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
             (a) => !(a.categoria === categoria && a.nome === nome)
@@ -1259,25 +1264,31 @@
   // Recalcula o valorTotal de adicionais cobrados por convidado (ex.: Coffee
   // Bar) sempre que o número de convidados no cabeçalho muda — a taxa por
   // convidado escolhida pelo vendedor fica igual, só o total é refeito.
+  // Atualiza também a prévia exibida nos itens ainda não marcados (o "valor
+  // cheio" mostrado na vitrine antes de marcar o item), que senão ficava
+  // travado no número de convidados de quando a aba foi montada.
   function recalcularAdicionaisPorConvidado() {
-    let mudou = false;
-    estado.adicionaisSelecionados.forEach((item) => {
-      if (item.valorPorConvidado == null) return;
-      const novoTotal = item.valorPorConvidado * (estado.cabecalho.convidados || 0);
-      if (novoTotal !== item.valorTotal) {
-        item.valorTotal = novoTotal;
-        mudou = true;
+    let mudouSelecionado = false;
+    document.querySelectorAll('.item-adicional [data-acao="taxa-porconvidado-adicional"]').forEach((inputTaxa) => {
+      const linha = inputTaxa.closest(".item-adicional");
+      const taxa = parseFloat(inputTaxa.value) || 0;
+      const novoTotal = taxa * (estado.cabecalho.convidados || 0);
+      const item = adicionalSelecionado(inputTaxa.dataset.categoria, inputTaxa.dataset.nome);
+      if (item) {
+        if (novoTotal !== item.valorTotal) {
+          item.valorTotal = novoTotal;
+          mudouSelecionado = true;
+        }
+        atualizarExibicaoValorCheio(linha, item);
+      } else {
+        const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+        if (valorTotalSpan) valorTotalSpan.textContent = calc.formatarMoeda(novoTotal);
       }
     });
-    if (!mudou) return;
+    if (!mudouSelecionado) return;
     persistir();
     atualizarTotalAdicionais();
     atualizarTvSeNecessario();
-    document.querySelectorAll(".item-adicional[data-chave]").forEach((linha) => {
-      const [categoriaNome, nomeItem] = linha.dataset.chave.split("::");
-      const item = adicionalSelecionado(categoriaNome, nomeItem);
-      if (item && item.valorPorConvidado != null) atualizarExibicaoValorCheio(linha, item);
-    });
   }
 
   // ---------------------------------------------------------------------
