@@ -354,6 +354,18 @@ body.modo-apresentacao .fundo-gradiente {
   color: #d8d3cb;
 }
 
+.resumo-compra-valor-com-desconto-tv {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.resumo-compra-valor-com-desconto-tv span.resumo-compra-valor-original-tv {
+  font-size: 0.65em;
+  color: var(--cor-texto-suave);
+  text-decoration: line-through;
+}
+
 .resumo-compra-total-tv {
   display: flex;
   justify-content: space-between;
@@ -392,10 +404,11 @@ body.modo-apresentacao .fundo-gradiente {
 .galeria-adicional-principal-tv {
   width: 100%;
   max-width: 900px;
-  max-height: 46vh;
-  object-fit: cover;
+  height: 46vh;
+  object-fit: contain;
   border-radius: 14px;
   filter: grayscale(0.15);
+  background: rgba(255, 255, 255, 0.04);
 }
 
 .galeria-adicional-miniaturas-tv {
@@ -408,8 +421,9 @@ body.modo-apresentacao .fundo-gradiente {
 .galeria-adicional-miniatura-tv {
   width: clamp(90px, 10vw, 150px);
   height: clamp(64px, 7vw, 105px);
-  object-fit: cover;
+  object-fit: contain;
   border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
   opacity: 0.85;
 }
 

@@ -287,6 +287,18 @@
   font-size: 0.92rem;
 }
 
+.resumo-valor-com-desconto {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.resumo-valor-com-desconto span.resumo-valor-original {
+  font-size: 0.7em;
+  color: var(--cor-texto-suave);
+  text-decoration: line-through;
+}
+
 .resumo-impressao-total {
   display: flex;
   justify-content: space-between;

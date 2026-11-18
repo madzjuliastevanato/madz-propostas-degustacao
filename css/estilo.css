@@ -866,6 +866,20 @@ main {
   text-align: right;
 }
 
+.item-adicional-taxa-campo {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-family: var(--fonte-texto);
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.item-adicional-taxa-campo input[type="number"] {
+  width: 4.5rem;
+  text-align: right;
+}
+
 .adicionais-total-barra {
   position: sticky;
   bottom: 1rem;
@@ -1017,6 +1031,19 @@ main {
   font-style: italic;
   text-align: center;
   padding: 2rem 0;
+}
+
+.resumo-valor-com-desconto {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.6rem;
+}
+
+.resumo-valor-com-desconto span.resumo-valor-original {
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: var(--cor-texto-suave);
+  text-decoration: line-through;
 }
 
 /* ---------- Responsivo / tablet ---------- */

@@ -113,6 +113,7 @@
       estado.cabecalho.convidados = parseInt(e.target.value, 10) || 0;
       persistir();
       recalcularTudo();
+      recalcularAdicionaisPorConvidado();
     });
     document.getElementById("campo-assessoria").addEventListener("input", (e) => {
       estado.cabecalho.assessoria = e.target.value;
@@ -325,6 +326,17 @@
     const div = document.createElement("div");
     div.textContent = texto;
     return div.innerHTML;
+  }
+
+  // Valor final de um item do resumo, com o valor inicial (sem desconto) ao
+  // lado, riscado, quando os dois forem diferentes — ex.: pacote com desconto
+  // da forma de pagamento, ou adicional com "valor final" preenchido.
+  function htmlValorComDesconto(original, final, tagFinal) {
+    const finalHtml = `<${tagFinal}>${calc.formatarMoeda(final)}</${tagFinal}>`;
+    if (original != null && original !== final) {
+      return `<span class="resumo-valor-com-desconto"><span class="resumo-valor-original">${calc.formatarMoeda(original)}</span>${finalHtml}</span>`;
+    }
+    return finalHtml;
   }
 
   function montarBlocoPacote(idPacote) {
@@ -620,14 +632,21 @@
   function encontrarSecaoEmFoco(secoes) {
     const alturaJanela = window.innerHeight;
     const linhaFoco = alturaJanela * 0.4;
+    // Quando a rolagem já chegou ao fim da página, a última seção pode nunca
+    // alcançar a linha de foco (não dá pra rolar mais pra trazê-la pra cima) —
+    // ela ficaria pulada para sempre (ex.: Papel de Arroz, a última categoria
+    // de Adicionais). Nesse caso, mostra a última seção visível.
+    const noFimDaPagina = window.scrollY + alturaJanela >= document.documentElement.scrollHeight - 2;
     let secaoNaLinha = null;
     let melhorSecao = null;
     let menorDistancia = Infinity;
+    let ultimaVisivel = null;
     secoes.forEach((secao) => {
       const r = secao.getBoundingClientRect();
       const topoVisivel = Math.max(r.top, 0);
       const baseVisivel = Math.min(r.bottom, alturaJanela);
       if (baseVisivel <= topoVisivel) return;
+      ultimaVisivel = secao;
       if (linhaFoco >= topoVisivel && linhaFoco <= baseVisivel) {
         secaoNaLinha = secao;
       }
@@ -638,6 +657,7 @@
         melhorSecao = secao;
       }
     });
+    if (noFimDaPagina && ultimaVisivel) return ultimaVisivel;
     return secaoNaLinha || melhorSecao;
   }
 
@@ -725,6 +745,9 @@
         } else if (aba === "adicionais") {
           atualizarFocoAdicional();
         } else if (aba === "resumo") {
+          // Reconstrói com os dados mais recentes: o casal pode ter marcado
+          // adicionais na vitrine desde a última vez que esta aba foi montada.
+          montarAbaResumo();
           estadoApresentacao.pacoteEmFoco = "resumo-compra";
           if (estadoApresentacao.modo === "espelho") enviarApresentacaoParaBemVindos();
         }
@@ -852,7 +875,7 @@
       ? dados.adicionais
           .map(
             (a) =>
-              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valorExibido)}</span></div>`
+              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span>${htmlValorComDesconto(a.valorOriginal, a.valorExibido, "span")}</div>`
           )
           .join("")
       : `<p class="inclui-impressao">Nenhum adicional selecionado.</p>`;
@@ -865,7 +888,7 @@
         </div>
         <div class="resumo-impressao-linha-pacote">
           <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
-          <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+          ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
         </div>
         <div class="resumo-impressao-subtitulo">Adicionais selecionados</div>
         ${adicionaisHtml}
@@ -935,6 +958,36 @@
     const chave = chaveAdicional(categoria, item.nome);
     const selecionado = adicionalSelecionado(categoria, item.nome);
     const observacao = item.observacao ? `<span class="item-adicional-observacao">${item.observacao}</span>` : "";
+
+    if (item.valorPorConvidado != null) {
+      const convidados = estado.cabecalho.convidados || 0;
+      const taxaAtual = selecionado && selecionado.valorPorConvidado != null ? selecionado.valorPorConvidado : item.valorPorConvidado;
+      const valorCheioAtual = taxaAtual * convidados;
+      const temDescontoPc = selecionado && selecionado.valorFinal != null && selecionado.valorFinal !== valorCheioAtual;
+      const descontoPc = temDescontoPc ? valorCheioAtual - selecionado.valorFinal : 0;
+      return `
+        <div class="item-adicional" data-chave="${chave}">
+          <label>
+            <input type="checkbox" data-acao="toggle-adicional-porconvidado" data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" ${selecionado ? "checked" : ""}>
+            ${escaparHtml(item.nome)} ${observacao}
+          </label>
+          <div class="item-adicional-precos">
+            <span class="item-adicional-taxa-campo">
+              R$ <input type="number" min="0" step="1" data-acao="taxa-porconvidado-adicional"
+                data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${taxaAtual}"
+                ${selecionado ? "" : "disabled"}> / convidado
+            </span>
+            <span class="item-adicional-valor${temDescontoPc ? " com-desconto" : ""}">${calc.formatarMoeda(valorCheioAtual)}</span>
+            <span class="item-adicional-valor-final-campo">
+              R$ <input type="number" min="0" step="1" placeholder="valor final" data-acao="valor-final-adicional"
+                data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}"
+                value="${selecionado && selecionado.valorFinal != null ? selecionado.valorFinal : ""}"
+                ${selecionado ? "" : "disabled"}>
+              ${temDescontoPc ? `<span class="item-adicional-desconto-info">− ${calc.formatarMoeda(descontoPc)}</span>` : ""}
+            </span>
+          </div>
+        </div>`;
+    }
 
     if (item.valorReferencia == null) {
       return `
@@ -1087,6 +1140,37 @@
         persistir();
         atualizarTotalAdicionais();
         atualizarTvSeNecessario();
+      } else if (alvo.dataset.acao === "toggle-adicional-porconvidado") {
+        const linha = alvo.closest(".item-adicional");
+        const inputTaxa = linha.querySelector('[data-acao="taxa-porconvidado-adicional"]');
+        const inputValorFinal = linha.querySelector('[data-acao="valor-final-adicional"]');
+        if (alvo.checked) {
+          if (!adicionalSelecionado(categoria, nome)) {
+            const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === categoria);
+            const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === nome);
+            const taxa = inputTaxa && inputTaxa.value !== "" ? parseFloat(inputTaxa.value) || 0 : itemCfg ? itemCfg.valorPorConvidado : 0;
+            const valorTotal = taxa * (estado.cabecalho.convidados || 0);
+            estado.adicionaisSelecionados.push({ categoria, nome, valorPorConvidado: taxa, valorTotal, valorFinal: null });
+          }
+          if (inputTaxa) inputTaxa.disabled = false;
+          if (inputValorFinal) inputValorFinal.disabled = false;
+        } else {
+          estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
+            (a) => !(a.categoria === categoria && a.nome === nome)
+          );
+          if (inputTaxa) inputTaxa.disabled = true;
+          if (inputValorFinal) {
+            inputValorFinal.disabled = true;
+            inputValorFinal.value = "";
+          }
+          const infoDesconto = linha.querySelector(".item-adicional-desconto-info");
+          if (infoDesconto) infoDesconto.remove();
+          const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+          if (valorTotalSpan) valorTotalSpan.classList.remove("com-desconto");
+        }
+        persistir();
+        atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
       } else if (alvo.dataset.acao === "toggle-adicional-manual") {
         const linha = alvo.closest(".item-adicional");
         const inputValor = linha.querySelector('[data-acao="valor-adicional-manual"]');
@@ -1124,6 +1208,15 @@
         persistir();
         atualizarTotalAdicionais();
         atualizarTvSeNecessario();
+      } else if (alvo.dataset.acao === "taxa-porconvidado-adicional") {
+        const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
+        if (!item) return;
+        item.valorPorConvidado = parseFloat(alvo.value) || 0;
+        item.valorTotal = item.valorPorConvidado * (estado.cabecalho.convidados || 0);
+        persistir();
+        atualizarTotalAdicionais();
+        atualizarTvSeNecessario();
+        atualizarExibicaoValorCheio(alvo.closest(".item-adicional"), item);
       } else if (alvo.dataset.acao === "valor-final-adicional") {
         const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
         if (!item) return;
@@ -1131,31 +1224,59 @@
         persistir();
         atualizarTotalAdicionais();
         atualizarTvSeNecessario();
-
-        // Atualiza só o "− Rx de desconto" e o risco no valor cheio, sem recriar o
-        // input (recriá-lo durante a digitação faz o cursor voltar pro início e a
-        // ordem dos números sair invertida).
-        const linha = alvo.closest(".item-adicional");
-        const categoriaCfg = CONFIG.catalogoAdicionais.find((c) => c.categoria === alvo.dataset.categoria);
-        const itemCfg = categoriaCfg && categoriaCfg.itens.find((i) => i.nome === alvo.dataset.nome);
-        if (linha && itemCfg) {
-          const temDesconto = item.valorFinal != null && item.valorFinal !== itemCfg.valorReferencia;
-          const valorTotalSpan = linha.querySelector(".item-adicional-valor");
-          if (valorTotalSpan) valorTotalSpan.classList.toggle("com-desconto", temDesconto);
-          let infoDesconto = linha.querySelector(".item-adicional-desconto-info");
-          if (temDesconto) {
-            const desconto = itemCfg.valorReferencia - item.valorFinal;
-            if (!infoDesconto) {
-              infoDesconto = document.createElement("span");
-              infoDesconto.className = "item-adicional-desconto-info";
-              linha.querySelector(".item-adicional-valor-final-campo").appendChild(infoDesconto);
-            }
-            infoDesconto.textContent = `− ${calc.formatarMoeda(desconto)}`;
-          } else if (infoDesconto) {
-            infoDesconto.remove();
-          }
-        }
+        atualizarExibicaoValorCheio(alvo.closest(".item-adicional"), item);
       }
+    });
+  }
+
+  // Atualiza só o "− Rx de desconto" e o risco no valor cheio, sem recriar o
+  // input (recriá-lo durante a digitação faz o cursor voltar pro início e a
+  // ordem dos números sair invertida). Usa o valorTotal já guardado no próprio
+  // item selecionado como referência "cheia" — funciona para qualquer tipo de
+  // adicional (preço fixo, manual ou por convidado).
+  function atualizarExibicaoValorCheio(linha, item) {
+    if (!linha) return;
+    const temDesconto = item.valorFinal != null && item.valorFinal !== item.valorTotal;
+    const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+    if (valorTotalSpan) {
+      valorTotalSpan.textContent = calc.formatarMoeda(item.valorTotal);
+      valorTotalSpan.classList.toggle("com-desconto", temDesconto);
+    }
+    let infoDesconto = linha.querySelector(".item-adicional-desconto-info");
+    if (temDesconto) {
+      const desconto = item.valorTotal - item.valorFinal;
+      if (!infoDesconto) {
+        infoDesconto = document.createElement("span");
+        infoDesconto.className = "item-adicional-desconto-info";
+        linha.querySelector(".item-adicional-valor-final-campo").appendChild(infoDesconto);
+      }
+      infoDesconto.textContent = `− ${calc.formatarMoeda(desconto)}`;
+    } else if (infoDesconto) {
+      infoDesconto.remove();
+    }
+  }
+
+  // Recalcula o valorTotal de adicionais cobrados por convidado (ex.: Coffee
+  // Bar) sempre que o número de convidados no cabeçalho muda — a taxa por
+  // convidado escolhida pelo vendedor fica igual, só o total é refeito.
+  function recalcularAdicionaisPorConvidado() {
+    let mudou = false;
+    estado.adicionaisSelecionados.forEach((item) => {
+      if (item.valorPorConvidado == null) return;
+      const novoTotal = item.valorPorConvidado * (estado.cabecalho.convidados || 0);
+      if (novoTotal !== item.valorTotal) {
+        item.valorTotal = novoTotal;
+        mudou = true;
+      }
+    });
+    if (!mudou) return;
+    persistir();
+    atualizarTotalAdicionais();
+    atualizarTvSeNecessario();
+    document.querySelectorAll(".item-adicional[data-chave]").forEach((linha) => {
+      const [categoriaNome, nomeItem] = linha.dataset.chave.split("::");
+      const item = adicionalSelecionado(categoriaNome, nomeItem);
+      if (item && item.valorPorConvidado != null) atualizarExibicaoValorCheio(linha, item);
     });
   }
 
@@ -1222,7 +1343,7 @@
       ? dados.adicionais
           .map(
             (a) =>
-              `<div class="resumo-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valorExibido)}</span></div>`
+              `<div class="resumo-linha-adicional"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span>${htmlValorComDesconto(a.valorOriginal, a.valorExibido, "span")}</div>`
           )
           .join("")
       : `<p class="resumo-vazio" style="padding:0.6rem 0;">Nenhum adicional selecionado.</p>`;
@@ -1230,7 +1351,7 @@
     return `
       <div class="resumo-linha-pacote">
         <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
-        <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+        ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
       </div>
       <div class="resumo-subtitulo">Adicionais selecionados</div>
       ${adicionaisHtml}
@@ -1244,7 +1365,7 @@
     const container = document.getElementById("aba-resumo");
     container.innerHTML = `
       <div class="resumo-cabecalho">
-        <h1 class="pacote-titulo" style="font-size:1.8rem;">Resumo da compra</h1>
+        <h1 class="pacote-titulo" style="font-size:1.8rem;">Resumo</h1>
         <p>Escolha o pacote, a bebida e a forma de pagamento para fechar com o casal.</p>
       </div>
       ${htmlPilulasResumo()}

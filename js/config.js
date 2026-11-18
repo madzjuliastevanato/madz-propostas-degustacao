@@ -178,9 +178,9 @@
         explicacao: "Um espaço de café e drinks quentes, montado junto ao bar, para fechar a noite.",
         fotos: [],
         itens: [
-          { nome: "Opção 1: 3 coffee shakes", valorReferencia: null, observacao: "R$ 40 por convidado" },
-          { nome: "Opção 2: 3 coffee shakes + frappuccinos e expressos", valorReferencia: null, observacao: "R$ 42 por convidado" },
-          { nome: "Opção 3: 3 coffee shakes + frappuccinos e expressos + alcoólicos", valorReferencia: null, observacao: "R$ 45 por convidado" },
+          { nome: "Opção 1: 3 coffee shakes", valorPorConvidado: 40 },
+          { nome: "Opção 2: 3 coffee shakes + frappuccinos e expressos", valorPorConvidado: 42 },
+          { nome: "Opção 3: 3 coffee shakes + frappuccinos e expressos + alcoólicos", valorPorConvidado: 45 },
         ],
       },
       {

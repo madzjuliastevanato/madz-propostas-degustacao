@@ -16,6 +16,16 @@
     return div.innerHTML;
   }
 
+  // Valor final de um item do resumo, com o valor inicial (sem desconto) ao
+  // lado, riscado, quando os dois forem diferentes.
+  function htmlValorComDesconto(original, final, tagFinal) {
+    const finalHtml = `<${tagFinal}>${calc.formatarMoeda(final)}</${tagFinal}>`;
+    if (original != null && original !== final) {
+      return `<span class="resumo-compra-valor-com-desconto-tv"><span class="resumo-compra-valor-original-tv">${calc.formatarMoeda(original)}</span>${finalHtml}</span>`;
+    }
+    return finalHtml;
+  }
+
   function renderizarResumo(estado) {
     const dados = proposta.dadosResumo(estado);
     const c = dados.cabecalho;
@@ -134,7 +144,7 @@
         (item) =>
           `<div class="adicionais-rodape-item-tv${item.selecionado ? " selecionado" : ""}">
             <span>${escaparHtml(item.nome)}</span>
-            <span>${item.valorExibido != null ? calc.formatarMoeda(item.valorExibido) : "Sob consulta"}</span>
+            <span>${item.valorExibido != null ? calc.formatarMoeda(item.valorExibido) + (item.porConvidado ? " / convidado" : "") : "Sob consulta"}</span>
           </div>`
       )
       .join("");
@@ -178,7 +188,7 @@
       ? dados.adicionais
           .map(
             (a) =>
-              `<div class="resumo-compra-linha-tv"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span><span>${calc.formatarMoeda(a.valorExibido)}</span></div>`
+              `<div class="resumo-compra-linha-tv"><span>${escaparHtml(a.categoria)} — ${escaparHtml(a.nome)}</span>${htmlValorComDesconto(a.valorOriginal, a.valorExibido, "span")}</div>`
           )
           .join("")
       : `<p class="apresentacao-vazio">Nenhum adicional selecionado.</p>`;
@@ -190,7 +200,7 @@
       </div>
       <div class="resumo-compra-linha-pacote-tv">
         <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
-        <strong>${calc.formatarMoeda(dados.totalPacote)}</strong>
+        ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
       </div>
       <h3 class="apresentacao-secao-titulo">Adicionais selecionados</h3>
       ${adicionaisHtml}

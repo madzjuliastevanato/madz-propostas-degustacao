@@ -32,6 +32,7 @@
       percentualPorHoraExtra: estadoPacote.percentualHoraExtra,
     });
     const percentualDesconto = estadoPacote.descontos[opcao.id] ?? opcao.percentualDesconto;
+    const totalTabela = calc.arredondarReais(calc.calcularTotalTabela(valorAjustado, c.convidados));
     const totalComDesconto = calc.calcularTotalComDesconto(valorAjustado, c.convidados, percentualDesconto);
 
     let detalhe = "";
@@ -68,7 +69,7 @@
       }
     }
 
-    return { valorAjustado, totalComDesconto, detalhe, aviso, numeroParcelas };
+    return { valorAjustado, totalTabela, totalComDesconto, detalhe, aviso, numeroParcelas };
   }
 
   function infoDrink(nome) {
@@ -157,6 +158,7 @@
     const adicionais = estado.adicionaisSelecionados.map((a) => ({
       ...a,
       nome: nomeExibidoAdicional(a.categoria, a.nome, a.quantidade),
+      valorOriginal: a.valorTotal,
       valorExibido: valorEfetivoAdicional(a),
     }));
     const totalAdicionais = adicionais.reduce((soma, a) => soma + (a.valorExibido || 0), 0);
@@ -167,6 +169,7 @@
       tipoNome: tipoInfo ? tipoInfo.nome : r.tipoBebidaEscolhido,
       opcaoNome: opcao.nome,
       totalPacote: resultado.totalComDesconto,
+      totalPacoteOriginal: resultado.totalTabela,
       detalhePacote: resultado.detalhe,
       avisoPacote: resultado.aviso,
       adicionais,
@@ -192,11 +195,22 @@
       const selecionado = estado.adicionaisSelecionados.find(
         (a) => a.categoria === nomeCategoria && a.nome === item.nome
       );
-      const valorExibido = selecionado ? valorEfetivoAdicional(selecionado) : item.valorReferencia;
+      let valorExibido;
+      let porConvidado = false;
+      if (item.valorPorConvidado != null) {
+        if (selecionado) {
+          valorExibido = valorEfetivoAdicional(selecionado);
+        } else {
+          valorExibido = item.valorPorConvidado;
+          porConvidado = true;
+        }
+      } else {
+        valorExibido = selecionado ? valorEfetivoAdicional(selecionado) : item.valorReferencia;
+      }
       const nome = selecionado
         ? nomeExibidoAdicional(nomeCategoria, item.nome, selecionado.quantidade)
         : item.nome;
-      return { nome, valorExibido, selecionado: Boolean(selecionado) };
+      return { nome, valorExibido, selecionado: Boolean(selecionado), porConvidado };
     });
     const indicePrincipal = indiceFotoPrincipal(estado, nomeCategoria, categoria.fotos.length);
     const fotos = categoria.fotos.map((src, indice) => ({ src, principal: indice === indicePrincipal }));
