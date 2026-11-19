@@ -201,12 +201,6 @@
         ],
       },
       {
-        categoria: "Mão de Obra Extra",
-        explicacao: "Reforço na equipe para eventos maiores ou com demanda extra de atendimento.",
-        fotos: [],
-        itens: [{ nome: "Mão de obra extra", valorReferencia: 350 }],
-      },
-      {
         categoria: "Upgrade de Bebida",
         explicacao: "Troca do rótulo padrão por uma versão superior, para elevar ainda mais o nível do bar.",
         fotos: [],
@@ -307,17 +301,19 @@
         { nome: "Mint Bourbon", autoral: true }, { nome: "Penicillin" }, { nome: "Boulevardier" },
       ]},
       { destilado: "Aperol", itens: [
-        { nome: "Aperol Spritz" }, { nome: "Nonnatine", autoral: true }, { nome: "Red Flower", autoral: true },
+        { nome: "Aperol Spritz" }, { nome: "Aperol Sour", observacao: "releitura" },
+        { nome: "Nonnatine", autoral: true }, { nome: "Red Flower", autoral: true },
       ]},
       { destilado: "Cachaça", itens: [
         { nome: "Cajuzeiro", autoral: true }, { nome: "Amaretto Spice", autoral: true },
       ]},
       { destilado: "Rum", itens: [
-        { nome: "Mojito" }, { nome: "Tropical Honey", autoral: true },
+        { nome: "Mojito" }, { nome: "Piña Colada" }, { nome: "Tropical Honey", autoral: true },
       ]},
       { destilado: "Mocktails", semAlcoolApenas: true, itens: [
         { nome: "Fresh Grape" }, { nome: "Sunrise" }, { nome: "Azedinha" }, { nome: "Barbie" },
         { nome: "Cotton Candy" }, { nome: "Yellow" }, { nome: "Malibu Spritz" }, { nome: "Blue Sky" },
+        { nome: "Drink Me", autoral: true }, { nome: "Duo Soda" },
       ]},
     ],
   };

@@ -263,9 +263,10 @@
       <h3 class="apresentacao-secao-titulo">Adicionais selecionados</h3>
       ${adicionaisHtml}
       <div class="resumo-compra-total-tv">
-        <span>Total geral</span>
+        <span>Total geral — ${escaparHtml(dados.opcaoNome)}</span>
         <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
       </div>
+      ${dados.detalheTotal ? `<p class="resumo-compra-detalhe-pagamento-tv">${dados.detalheTotal}</p>` : ""}
     `;
   }
 

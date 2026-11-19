@@ -947,9 +947,10 @@
         <div class="resumo-impressao-subtitulo">Adicionais selecionados</div>
         ${adicionaisHtml}
         <div class="resumo-impressao-total">
-          <span>Total geral</span>
+          <span>Total geral — ${escaparHtml(dados.opcaoNome)}</span>
           <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
         </div>
+        ${dados.detalheTotal ? `<p class="resumo-impressao-detalhe-pagamento">${dados.detalheTotal}</p>` : ""}
       </div>`;
   }
 
@@ -1028,8 +1029,7 @@
           <div class="item-adicional-precos">
             <span class="item-adicional-taxa-campo">
               R$ <input type="number" min="0" step="1" data-acao="taxa-porconvidado-adicional"
-                data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${taxaAtual}"
-                ${selecionado ? "" : "disabled"}> / convidado
+                data-categoria="${categoria}" data-nome="${escaparHtml(item.nome)}" value="${taxaAtual}"> / convidado
             </span>
             <span class="item-adicional-valor${temDescontoPc ? " com-desconto" : ""}">${calc.formatarMoeda(valorCheioAtual)}</span>
             <span class="item-adicional-valor-final-campo">
@@ -1209,7 +1209,6 @@
             item = { categoria, nome, valorPorConvidado: taxa, valorTotal, valorFinal: null };
             estado.adicionaisSelecionados.push(item);
           }
-          if (inputTaxa) inputTaxa.disabled = false;
           if (inputValorFinal) inputValorFinal.disabled = false;
           // O preço cheio exibido pode ter ficado desatualizado se o número de
           // convidados mudou enquanto o item estava desmarcado — atualiza agora.
@@ -1218,7 +1217,6 @@
           estado.adicionaisSelecionados = estado.adicionaisSelecionados.filter(
             (a) => !(a.categoria === categoria && a.nome === nome)
           );
-          if (inputTaxa) inputTaxa.disabled = true;
           if (inputValorFinal) {
             inputValorFinal.disabled = true;
             inputValorFinal.value = "";
@@ -1269,14 +1267,24 @@
         atualizarTotalAdicionais();
         atualizarTvSeNecessario();
       } else if (alvo.dataset.acao === "taxa-porconvidado-adicional") {
+        const taxa = parseFloat(alvo.value) || 0;
+        const novoTotal = taxa * (estado.cabecalho.convidados || 0);
         const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
-        if (!item) return;
-        item.valorPorConvidado = parseFloat(alvo.value) || 0;
-        item.valorTotal = item.valorPorConvidado * (estado.cabecalho.convidados || 0);
-        persistir();
-        atualizarTotalAdicionais();
-        atualizarTvSeNecessario();
-        atualizarExibicaoValorCheio(alvo.closest(".item-adicional"), item);
+        const linha = alvo.closest(".item-adicional");
+        if (item) {
+          item.valorPorConvidado = taxa;
+          item.valorTotal = novoTotal;
+          persistir();
+          atualizarTotalAdicionais();
+          atualizarTvSeNecessario();
+          atualizarExibicaoValorCheio(linha, item);
+        } else {
+          // Ainda não marcado: só atualiza a prévia do valor cheio exibido,
+          // sem guardar estado — o valor digitado aqui já fica no próprio
+          // input, então é lido normalmente quando o item for marcado.
+          const valorTotalSpan = linha.querySelector(".item-adicional-valor");
+          if (valorTotalSpan) valorTotalSpan.textContent = calc.formatarMoeda(novoTotal);
+        }
       } else if (alvo.dataset.acao === "valor-final-adicional") {
         const item = adicionalSelecionado(alvo.dataset.categoria, alvo.dataset.nome);
         if (!item) return;
@@ -1508,9 +1516,10 @@
       <div class="resumo-subtitulo">Adicionais selecionados</div>
       ${adicionaisHtml}
       <div class="resumo-total-geral">
-        <span>Total geral</span>
+        <span>Total geral — ${escaparHtml(dados.opcaoNome)}</span>
         <strong>${calc.formatarMoeda(dados.totalGeral)}</strong>
-      </div>`;
+      </div>
+      ${dados.detalheTotal ? `<p class="resumo-detalhe-pagamento">${dados.detalheTotal}</p>` : ""}`;
   }
 
   function montarAbaResumo() {

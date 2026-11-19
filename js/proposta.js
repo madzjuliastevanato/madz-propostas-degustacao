@@ -24,17 +24,12 @@
     return `${dia}/${mes}/${ano}`;
   }
 
-  function calcularOpcaoParaTipo(estado, idPacote, tipoId, opcao) {
-    const estadoPacote = estado.pacotes[idPacote];
-    const c = estado.cabecalho;
-    const valorBase = estadoPacote.valoresPorConvidado[tipoId] || 0;
-    const valorAjustado = calc.calcularValorAjustadoPorHoras(valorBase, c.tempoServicoHoras, {
-      percentualPorHoraExtra: estadoPacote.percentualHoraExtra,
-    });
-    const percentualDesconto = estadoPacote.descontos[opcao.id] ?? opcao.percentualDesconto;
-    const totalTabela = calc.arredondarReais(calc.calcularTotalTabela(valorAjustado, c.convidados));
-    const totalComDesconto = calc.calcularTotalComDesconto(valorAjustado, c.convidados, percentualDesconto);
-
+  // Monta o texto da forma de pagamento (entrada+saldo, parcelas fixas ou
+  // boleto) para um total qualquer — usada tanto para o total só do pacote
+  // (calcularOpcaoParaTipo) quanto para o total combinado de pacote+adicionais
+  // no resumo da compra (dadosResumoCompra), já que a forma de pagamento deve
+  // valer sobre o que o casal realmente vai pagar, não só a parte do pacote.
+  function detalhePagamento(estadoPacote, c, opcao, totalComDesconto) {
     let detalhe = "";
     let aviso = null;
     let numeroParcelas = null;
@@ -68,6 +63,21 @@
         detalhe = `${numeroParcelas}x de ${calc.formatarMoeda(valorParcela)}`;
       }
     }
+
+    return { detalhe, aviso, numeroParcelas };
+  }
+
+  function calcularOpcaoParaTipo(estado, idPacote, tipoId, opcao) {
+    const estadoPacote = estado.pacotes[idPacote];
+    const c = estado.cabecalho;
+    const valorBase = estadoPacote.valoresPorConvidado[tipoId] || 0;
+    const valorAjustado = calc.calcularValorAjustadoPorHoras(valorBase, c.tempoServicoHoras, {
+      percentualPorHoraExtra: estadoPacote.percentualHoraExtra,
+    });
+    const percentualDesconto = estadoPacote.descontos[opcao.id] ?? opcao.percentualDesconto;
+    const totalTabela = calc.arredondarReais(calc.calcularTotalTabela(valorAjustado, c.convidados));
+    const totalComDesconto = calc.calcularTotalComDesconto(valorAjustado, c.convidados, percentualDesconto);
+    const { detalhe, aviso, numeroParcelas } = detalhePagamento(estadoPacote, c, opcao, totalComDesconto);
 
     return { valorAjustado, totalTabela, totalComDesconto, detalhe, aviso, numeroParcelas };
   }
@@ -167,6 +177,13 @@
       valorReferencia: c.valorReferencia != null ? c.valorReferencia : null,
     }));
 
+    // A forma de pagamento (entrada+saldo, parcelas ou boleto) vale sobre o
+    // que o casal vai de fato pagar — pacote + adicionais juntos —, não só a
+    // parte do pacote. Recalcula o detalhe (ex.: "9x de R$X") sobre esse total
+    // combinado para mostrar junto do total geral.
+    const totalCombinado = resultado.totalComDesconto + totalAdicionais;
+    const detalhePagamentoCombinado = detalhePagamento(estado.pacotes[r.pacoteEscolhido], estado.cabecalho, opcao, totalCombinado);
+
     return {
       nomeCasal: estado.cabecalho.nomeCasal,
       pacoteNome: configPacote.nome,
@@ -180,7 +197,8 @@
       cortesias,
       adicionais,
       totalAdicionais,
-      totalGeral: resultado.aviso ? null : resultado.totalComDesconto + totalAdicionais,
+      detalheTotal: resultado.aviso ? null : detalhePagamentoCombinado.detalhe,
+      totalGeral: resultado.aviso ? null : totalCombinado,
     };
   }
 
