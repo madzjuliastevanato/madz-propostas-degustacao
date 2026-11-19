@@ -243,6 +243,15 @@ button.botao-discreto:hover {
   gap: 3rem;
 }
 
+/* Espaço invisível no fim de cada aba, só para dar "corda" de rolagem — sem
+   ele, a linha de foco da TV (a 40% do topo da janela) nunca alcança as
+   últimas seções de uma lista comprida, porque a rolagem acaba antes da
+   linha chegar lá. Ver encontrarSecaoEmFoco() em app.js. */
+.espaco-rolagem-tv {
+  height: 60vh;
+  flex-shrink: 0;
+}
+
 /* ---------- Layout principal ---------- */
 
 main {
@@ -1069,6 +1078,29 @@ main {
   font-weight: 400;
   color: var(--cor-texto-suave);
   text-decoration: line-through;
+}
+
+.cortesia-rotulo {
+  font-size: 0.78rem;
+  color: var(--cor-dourado-forte);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resumo-pacote-inclui {
+  list-style: none;
+  padding: 0;
+  margin: 0.8rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.resumo-pacote-inclui li::before {
+  content: "• ";
+  color: var(--cor-dourado);
 }
 
 /* ---------- Responsivo / tablet ---------- */

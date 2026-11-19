@@ -69,6 +69,14 @@ body.modo-apresentacao .fundo-gradiente {
   opacity: 0.95;
 }
 
+.bemvindos-label {
+  font-size: clamp(0.85rem, 1.1vw, 1.1rem);
+  text-transform: uppercase;
+  letter-spacing: 0.35em;
+  color: var(--cor-texto-suave);
+  margin: 0 0 0.8rem;
+}
+
 .nome-casal {
   font-family: var(--fonte-cursiva);
   font-weight: 400;
@@ -364,6 +372,32 @@ body.modo-apresentacao .fundo-gradiente {
   font-size: 0.65em;
   color: var(--cor-texto-suave);
   text-decoration: line-through;
+}
+
+.cortesia-rotulo-tv {
+  font-size: clamp(0.78rem, 1vw, 0.95rem);
+  color: var(--cor-dourado-forte);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resumo-compra-pacote-inclui-tv {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 clamp(0.8rem, 1.6vh, 1.2rem);
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.4rem clamp(1rem, 2vw, 2rem);
+  width: 100%;
+  max-width: 1100px;
+  font-size: clamp(0.8rem, 1.1vw, 1rem);
+  color: var(--cor-texto-suave);
+}
+
+.resumo-compra-pacote-inclui-tv li::before {
+  content: "• ";
+  color: var(--cor-dourado);
 }
 
 .resumo-compra-total-tv {

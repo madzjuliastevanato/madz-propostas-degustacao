@@ -299,6 +299,29 @@
   text-decoration: line-through;
 }
 
+.cortesia-rotulo {
+  font-size: 0.7em;
+  color: var(--cor-dourado-forte);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.resumo-impressao-pacote-inclui {
+  list-style: none;
+  padding: 0;
+  margin: 0.8rem 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 1.5rem;
+  font-size: 0.85rem;
+  color: var(--cor-texto-suave);
+}
+
+.resumo-impressao-pacote-inclui li::before {
+  content: "• ";
+  color: var(--cor-dourado);
+}
+
 .resumo-impressao-total {
   display: flex;
   justify-content: space-between;

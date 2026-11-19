@@ -339,6 +339,13 @@
     return finalHtml;
   }
 
+  // Valor de uma cortesia: o valor de referência do serviço, riscado — para o
+  // casal ver o quanto aquilo valeria, sem cobrança, já que é cortesia.
+  function htmlValorCortesia(valorReferencia) {
+    if (valorReferencia == null) return `<span class="cortesia-rotulo">Cortesia</span>`;
+    return `<span class="resumo-valor-com-desconto"><span class="resumo-valor-original">${calc.formatarMoeda(valorReferencia)}</span><span class="cortesia-rotulo">Cortesia</span></span>`;
+  }
+
   function montarBlocoPacote(idPacote) {
     const configPacote = CONFIG.pacotes[idPacote];
     const container = document.getElementById(`pacote-${idPacote}`);
@@ -632,24 +639,22 @@
   function encontrarSecaoEmFoco(secoes) {
     const alturaJanela = window.innerHeight;
     const linhaFoco = alturaJanela * 0.4;
-    // Quando a rolagem já chegou ao fim da página, a última seção pode nunca
-    // alcançar a linha de foco (não dá pra rolar mais pra trazê-la pra cima) —
-    // ela ficaria pulada para sempre (ex.: Papel de Arroz, a última categoria
-    // de Adicionais). Nesse caso, mostra a última seção visível.
-    const noFimDaPagina = window.scrollY + alturaJanela >= document.documentElement.scrollHeight - 2;
     let secaoNaLinha = null;
     let melhorSecao = null;
     let menorDistancia = Infinity;
-    let ultimaVisivel = null;
     secoes.forEach((secao) => {
       const r = secao.getBoundingClientRect();
       const topoVisivel = Math.max(r.top, 0);
       const baseVisivel = Math.min(r.bottom, alturaJanela);
       if (baseVisivel <= topoVisivel) return;
-      ultimaVisivel = secao;
       if (linhaFoco >= topoVisivel && linhaFoco <= baseVisivel) {
         secaoNaLinha = secao;
       }
+      // Perto do fim da rolagem, a linha pode nunca alcançar fisicamente uma
+      // seção curta no fim da lista (não dá pra rolar mais pra trazê-la pra
+      // cima) — por isso o empate é resolvido pela distância até a borda mais
+      // próxima da seção, não só por quem a linha atravessa; a seção mais
+      // perto da linha, mesmo sem tocá-la, ganha.
       const distancia =
         linhaFoco < topoVisivel ? topoVisivel - linhaFoco : linhaFoco > baseVisivel ? linhaFoco - baseVisivel : 0;
       if (distancia < menorDistancia) {
@@ -657,7 +662,6 @@
         melhorSecao = secao;
       }
     });
-    if (noFimDaPagina && ultimaVisivel) return ultimaVisivel;
     return secaoNaLinha || melhorSecao;
   }
 
@@ -903,6 +907,17 @@
     const dados = proposta.dadosResumoCompra(estado);
     if (!dados || dados.avisoPacote) return "";
 
+    const incluiHtml = dados.pacoteInclui.map((item) => `<li>${escaparHtml(item)}</li>`).join("");
+
+    const cortesiasHtml = dados.cortesias.length
+      ? dados.cortesias
+          .map(
+            (c) =>
+              `<div class="resumo-impressao-linha-adicional"><span>${escaparHtml(c.nome)}</span>${htmlValorCortesia(c.valorReferencia)}</div>`
+          )
+          .join("")
+      : "";
+
     const adicionaisHtml = dados.adicionais.length
       ? dados.adicionais
           .map(
@@ -922,6 +937,13 @@
           <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
           ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
         </div>
+        <ul class="resumo-impressao-pacote-inclui">${incluiHtml}</ul>
+        ${
+          dados.cortesias.length
+            ? `<div class="resumo-impressao-subtitulo">Cortesias</div>
+        ${cortesiasHtml}`
+            : ""
+        }
         <div class="resumo-impressao-subtitulo">Adicionais selecionados</div>
         ${adicionaisHtml}
         <div class="resumo-impressao-total">
@@ -1116,6 +1138,7 @@
       </div>
       ${CONFIG.catalogoAdicionais.map(htmlCategoriaAdicional).join("")}
       <div class="adicionais-total-barra" id="adicionais-total-barra"></div>
+      <div class="espaco-rolagem-tv"></div>
     `;
     atualizarTotalAdicionais();
 
@@ -1371,6 +1394,7 @@
         <p>Nossas estruturas de bar — mostre ao casal para ajudar na escolha do visual do evento.</p>
       </div>
       ${CONFIG.catalogoPortfolio.map(htmlCategoriaPortfolio).join("")}
+      <div class="espaco-rolagem-tv"></div>
     `;
 
     if (container.dataset.eventosLigados) return;
@@ -1449,6 +1473,17 @@
       return `<p class="resumo-vazio">${dados.avisoPacote}</p>`;
     }
 
+    const incluiHtml = dados.pacoteInclui.map((item) => `<li>${escaparHtml(item)}</li>`).join("");
+
+    const cortesiasHtml = dados.cortesias.length
+      ? dados.cortesias
+          .map(
+            (c) =>
+              `<div class="resumo-linha-adicional"><span>${escaparHtml(c.nome)}</span>${htmlValorCortesia(c.valorReferencia)}</div>`
+          )
+          .join("")
+      : "";
+
     const adicionaisHtml = dados.adicionais.length
       ? dados.adicionais
           .map(
@@ -1463,6 +1498,13 @@
         <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
         ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
       </div>
+      <ul class="resumo-pacote-inclui">${incluiHtml}</ul>
+      ${
+        dados.cortesias.length
+          ? `<div class="resumo-subtitulo">Cortesias</div>
+      ${cortesiasHtml}`
+          : ""
+      }
       <div class="resumo-subtitulo">Adicionais selecionados</div>
       ${adicionaisHtml}
       <div class="resumo-total-geral">

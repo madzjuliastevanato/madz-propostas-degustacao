@@ -162,16 +162,22 @@
       valorExibido: valorEfetivoAdicional(a),
     }));
     const totalAdicionais = adicionais.reduce((soma, a) => soma + (a.valorExibido || 0), 0);
+    const cortesias = (estado.pacotes[r.pacoteEscolhido].cortesias || []).map((c) => ({
+      nome: c.nome,
+      valorReferencia: c.valorReferencia != null ? c.valorReferencia : null,
+    }));
 
     return {
       nomeCasal: estado.cabecalho.nomeCasal,
       pacoteNome: configPacote.nome,
+      pacoteInclui: configPacote.inclui,
       tipoNome: tipoInfo ? tipoInfo.nome : r.tipoBebidaEscolhido,
       opcaoNome: opcao.nome,
       totalPacote: resultado.totalComDesconto,
       totalPacoteOriginal: resultado.totalTabela,
       detalhePacote: resultado.detalhe,
       avisoPacote: resultado.aviso,
+      cortesias,
       adicionais,
       totalAdicionais,
       totalGeral: resultado.aviso ? null : resultado.totalComDesconto + totalAdicionais,

@@ -6,6 +6,7 @@
   const canal = state.criarCanalBemVindos();
 
   const elementoNome = document.getElementById("nome-casal");
+  const elementoLabelBemVindos = document.getElementById("bemvindos-label");
   const conteudoBemVindos = document.getElementById("conteudo-bemvindos");
   const vistaApresentacao = document.getElementById("vista-apresentacao");
   const botaoTelaCheia = document.getElementById("botao-tela-cheia");
@@ -24,6 +25,13 @@
       return `<span class="resumo-compra-valor-com-desconto-tv"><span class="resumo-compra-valor-original-tv">${calc.formatarMoeda(original)}</span>${finalHtml}</span>`;
     }
     return finalHtml;
+  }
+
+  // Valor de uma cortesia: o valor de referência do serviço, riscado — para o
+  // casal ver o quanto aquilo valeria, sem cobrança, já que é cortesia.
+  function htmlValorCortesia(valorReferencia) {
+    if (valorReferencia == null) return `<span class="cortesia-rotulo-tv">Cortesia</span>`;
+    return `<span class="resumo-compra-valor-com-desconto-tv"><span class="resumo-compra-valor-original-tv">${calc.formatarMoeda(valorReferencia)}</span><span class="cortesia-rotulo-tv">Cortesia</span></span>`;
   }
 
   function renderizarResumo(estado) {
@@ -216,6 +224,17 @@
       return;
     }
 
+    const incluiHtml = dados.pacoteInclui.map((item) => `<li>${escaparHtml(item)}</li>`).join("");
+
+    const cortesiasHtml = dados.cortesias.length
+      ? dados.cortesias
+          .map(
+            (c) =>
+              `<div class="resumo-compra-linha-tv"><span>${escaparHtml(c.nome)}</span>${htmlValorCortesia(c.valorReferencia)}</div>`
+          )
+          .join("")
+      : "";
+
     const adicionaisHtml = dados.adicionais.length
       ? dados.adicionais
           .map(
@@ -234,6 +253,13 @@
         <span>${dados.pacoteNome} — ${dados.tipoNome} — ${dados.opcaoNome}${dados.detalhePacote ? ` (${dados.detalhePacote})` : ""}</span>
         ${htmlValorComDesconto(dados.totalPacoteOriginal, dados.totalPacote, "strong")}
       </div>
+      <ul class="resumo-compra-pacote-inclui-tv">${incluiHtml}</ul>
+      ${
+        dados.cortesias.length
+          ? `<h3 class="apresentacao-secao-titulo">Cortesias</h3>
+      ${cortesiasHtml}`
+          : ""
+      }
       <h3 class="apresentacao-secao-titulo">Adicionais selecionados</h3>
       ${adicionaisHtml}
       <div class="resumo-compra-total-tv">
@@ -266,7 +292,9 @@
 
     document.body.classList.remove("modo-apresentacao");
     if (typeof dados.nomeCasal === "string") {
-      elementoNome.textContent = dados.nomeCasal.trim() || "Bem-vindos";
+      const nome = dados.nomeCasal.trim();
+      elementoNome.textContent = nome || "Bem-vindos";
+      elementoLabelBemVindos.classList.toggle("oculto", !nome);
     }
     conteudoBemVindos.classList.remove("oculto");
     vistaApresentacao.classList.add("oculto");
